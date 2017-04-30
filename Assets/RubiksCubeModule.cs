@@ -16,15 +16,22 @@ public class RubiksCubeModule : MonoBehaviour
     public KMBombModule Module;
     public KMAudio Audio;
 
-    private Transform[,,] _cubelets;
     public Material[] StickerMaterials;
+    public KMSelectable[] Arrows;
+    public KMSelectable Reset;
 
     public Transform Cube;
     public Transform OffAxis;
     public Transform OnAxis;
     public GameObject Sticker;
 
-    private Queue<FaceRotation> _queue = new Queue<FaceRotation>();
+    private Transform[,,] _cubeletsSolved;
+    private Transform[,,] _cubelets;
+
+    private Queue<object> _queue = new Queue<object>();
+    private Stack<FaceRotation> _performedMoves = new Stack<FaceRotation>();
+    private static string[] _arrowMoves = "b|b'|d|d'|f|f'|l|l'|r|r'|u|u'".Split('|');
+
     private bool _isSolved = false;
     private int _moduleId;
     private static int _moduleIdCounter = 1;
@@ -55,6 +62,7 @@ public class RubiksCubeModule : MonoBehaviour
                         CreateSticker(_cubelets[x, y, z], StickerMaterials[2], new Vector3(0, 0, 90), "Back sticker (O)");
                 }
 
+        _cubeletsSolved = _cubelets;
         Module.OnActivate += ActivateModule;
     }
 
@@ -89,24 +97,69 @@ public class RubiksCubeModule : MonoBehaviour
                 case "RJ45": colShifts[2] += 2; break;
             }
         Debug.LogFormat("[Rubik's Cube #{0}] Column shifts: A={1}, B={2}, C={3}", _moduleId, colShifts[0], colShifts[1], colShifts[2]);
-        var rows = Bomb.GetSerialNumber().Select(ch => ch >= '0' && ch <= '9' ? ch - '0' : ch - 'A' + 10).Select(n => ((n / 3 - colShifts[n % 3]) % table.Length + table.Length) % table.Length).ToArray();
+        var ser = Bomb.GetSerialNumber();
+        var rows = ser.Select(ch => ch >= '0' && ch <= '9' ? ch - '0' : ch - 'A' + 10).Select(n => (n / 3 + colShifts[n % 3]) % table.Length).ToArray();
+        Debug.LogFormat("[Rubik's Cube #{0}] {1}", _moduleId, string.Join(", ", rows.Select((r, rIx) => string.Format("{0}={1}/{2}", ser[rIx], table[r][0], table[r][1])).ToArray()));
         string[] moves;
         if (Bomb.GetPortPlates().Any(p => p.Length == 0))
+        {
             moves = rows.Select(r => table[r][0]).Concat(rows.Select(r => table[r][1])).ToArray();
+            Debug.LogFormat("[Rubik's Cube #{0}] Empty port plate exists. Moves now: {1}", _moduleId, string.Join(" ", moves));
+        }
         else
+        {
             moves = rows.SelectMany(r => table[r]).ToArray();
+            Debug.LogFormat("[Rubik's Cube #{0}] No empty port plate. Moves now: {1}", _moduleId, string.Join(" ", moves));
+        }
+
         if (Bomb.GetOnIndicators().Count() >= Bomb.GetOffIndicators().Count())
+        {
             for (int i = 0; i < 6; i++)
-                moves[i] = opposite(moves[i]);
+                moves[i] = reverse(moves[i]);
+            Debug.LogFormat("[Rubik's Cube #{0}] Lit indicators rule applies. Moves now: {1}", _moduleId, string.Join(" ", moves));
+        }
 
-        Debug.LogFormat("[Rubik's Cube #{0}] Solution moves: {1}", _moduleId, string.Join(", ", moves));
-
+        _queue.Enqueue(90);
         foreach (var move in moves.Reverse())
-            _queue.Enqueue(_moves[opposite(move)]);
+            _queue.Enqueue(_moves[move].Reverse);
+        _queue.Enqueue(5);
+
         StartCoroutine(PerformMoves());
+
+        for (int i = 0; i < 12; i++)
+            SetArrowClick(i);
+
+        Reset.OnInteract = delegate
+        {
+            Reset.AddInteractionPunch();
+            Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, Reset.transform);
+            if (_isSolved)
+                return false;
+            _queue.Enqueue(30);
+            while (_performedMoves.Count > 0)
+                _queue.Enqueue(_performedMoves.Pop().Reverse);
+            _performedMoves.Clear();
+            _queue.Enqueue(5);
+            return false;
+        };
     }
 
-    private string opposite(string move)
+    private void SetArrowClick(int i)
+    {
+        Arrows[i].OnInteract = delegate
+        {
+            Arrows[i].AddInteractionPunch();
+            Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, Arrows[i].transform);
+            if (_isSolved)
+                return false;
+            var move = _moves[_arrowMoves[i]];
+            _queue.Enqueue(move);
+            _performedMoves.Push(move);
+            return false;
+        };
+    }
+
+    private string reverse(string move)
     {
         if (move.EndsWith("'"))
             return move.Substring(0, 1);
@@ -115,16 +168,39 @@ public class RubiksCubeModule : MonoBehaviour
 
     private IEnumerator PerformMoves()
     {
+        int speed = 5;
         while (!_isSolved)
         {
             yield return null;
             if (_queue.Count > 0)
             {
-                var move = _queue.Dequeue();
-                foreach (var obj in PerformRotation(move))
-                    yield return obj;
+                var obj = _queue.Dequeue();
+                if (obj is int)
+                    speed = (int) obj;
+                else if (obj is FaceRotation)
+                {
+                    foreach (var item in PerformRotation((FaceRotation) obj, speed))
+                        yield return item;
+
+                    if (isSolved(_cubelets))
+                    {
+                        _isSolved = true;
+                        Module.HandlePass();
+                        yield break;
+                    }
+                }
             }
         }
+    }
+
+    private bool isSolved(Transform[,,] cubelets)
+    {
+        for (int x = 0; x < 3; x++)
+            for (int y = 0; y < 3; y++)
+                for (int z = 0; z < 3; z++)
+                    if (cubelets[x, y, z] != _cubeletsSolved[x, y, z])
+                        return false;
+        return true;
     }
 
     sealed class FaceRotation
@@ -142,6 +218,7 @@ public class RubiksCubeModule : MonoBehaviour
             MapY = mapY;
             MapZ = mapZ;
         }
+        public FaceRotation Reverse { get; set; }
     }
 
     private static Dictionary<string, FaceRotation> _moves;
@@ -161,27 +238,67 @@ public class RubiksCubeModule : MonoBehaviour
         _moves["u'"] = new FaceRotation((x, y, z) => y == 0, i => new Vector3(0, -i, 0), (x, y, z) => z, (x, y, z) => y, (x, y, z) => 2 - x);
         _moves["d"] = new FaceRotation((x, y, z) => y == 2, i => new Vector3(0, -i, 0), (x, y, z) => z, (x, y, z) => y, (x, y, z) => 2 - x);
         _moves["d'"] = new FaceRotation((x, y, z) => y == 2, i => new Vector3(0, i, 0), (x, y, z) => 2 - z, (x, y, z) => y, (x, y, z) => x);
+
+        _moves["f"].Reverse = _moves["f'"];
+        _moves["f'"].Reverse = _moves["f"];
+        _moves["b"].Reverse = _moves["b'"];
+        _moves["b'"].Reverse = _moves["b"];
+        _moves["l"].Reverse = _moves["l'"];
+        _moves["l'"].Reverse = _moves["l"];
+        _moves["r"].Reverse = _moves["r'"];
+        _moves["r'"].Reverse = _moves["r"];
+        _moves["u"].Reverse = _moves["u'"];
+        _moves["u'"].Reverse = _moves["u"];
+        _moves["d"].Reverse = _moves["d'"];
+        _moves["d'"].Reverse = _moves["d"];
     }
 
     IEnumerator ProcessTwitchCommand(string command)
     {
-        foreach (var cmd in command.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+        if (command.Trim().Equals("reset", StringComparison.InvariantCultureIgnoreCase))
         {
-            FaceRotation rot;
-            if (_moves.TryGetValue(cmd, out rot))
-                foreach (var obj in PerformRotation(rot))
-                    yield return obj;
-            else if (cmd.Length == 2 && cmd[1] == '2' && _moves.TryGetValue(cmd[0].ToString(), out rot))
+            Reset.OnInteract();
+            yield return new WaitForSeconds(.1f);
+            yield break;
+        }
+
+        var selectables = new List<KMSelectable>();
+        var cubelets = _cubelets;
+        foreach (var cmd in command.ToLowerInvariant().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            bool doubled = false;
+            var ix = Array.IndexOf(_arrowMoves, cmd);
+            if (ix == -1 && cmd.Length == 2 && cmd.EndsWith("2"))
             {
-                foreach (var obj in PerformRotation(rot))
-                    yield return obj;
-                foreach (var obj in PerformRotation(rot))
-                    yield return obj;
+                ix = Array.IndexOf(_arrowMoves, cmd.Substring(0, 1));
+                doubled = true;
             }
+
+            if (ix == -1)
+                yield break;
+
+            for (int i = doubled ? 2 : 1; i > 0; i--)
+            {
+                cubelets = PerformRotationOnCubelets(cubelets, _moves[_arrowMoves[ix]]);
+                selectables.Add(Arrows[ix]);
+
+                if (isSolved(cubelets))
+                {
+                    yield return "solve";
+                    goto perform;
+                }
+            }
+        }
+
+        perform:
+        foreach (var sel in selectables)
+        {
+            sel.OnInteract();
+            yield return new WaitForSeconds(.1f);
         }
     }
 
-    IEnumerable PerformRotation(FaceRotation rot, bool instantaneous = false)
+    Transform[,,] PerformRotationOnCubelets(Transform[,,] cubelets, FaceRotation rot, bool setParent = false)
     {
         var newCubelets = new Transform[3, 3, 3];
         for (int x = 0; x < 3; x++)
@@ -189,14 +306,20 @@ public class RubiksCubeModule : MonoBehaviour
                 for (int z = 0; z < 3; z++)
                     if (rot.OnAxis(x, y, z))
                     {
-                        _cubelets[x, y, z].parent = OnAxis;
-                        newCubelets[x, y, z] = _cubelets[rot.MapX(x, y, z), rot.MapY(x, y, z), rot.MapZ(x, y, z)];
+                        if (setParent)
+                            cubelets[x, y, z].parent = OnAxis;
+                        newCubelets[x, y, z] = cubelets[rot.MapX(x, y, z), rot.MapY(x, y, z), rot.MapZ(x, y, z)];
                     }
                     else
-                        newCubelets[x, y, z] = _cubelets[x, y, z];
-        _cubelets = newCubelets;
+                        newCubelets[x, y, z] = cubelets[x, y, z];
+        return newCubelets;
+    }
 
-        for (int i = instantaneous ? 90 : 0; i <= 90; i += 5)
+    IEnumerable PerformRotation(FaceRotation rot, int speed)
+    {
+        _cubelets = PerformRotationOnCubelets(_cubelets, rot, setParent: true);
+
+        for (int i = 0; i <= 90; i += speed)
         {
             OnAxis.localEulerAngles = rot.Rotation(i);
             yield return null;
