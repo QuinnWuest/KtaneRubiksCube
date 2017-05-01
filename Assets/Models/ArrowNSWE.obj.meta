@@ -1,17 +1,17 @@
 fileFormatVersion: 2
-guid: 4ce3c1de1d2d028438e8c01f1a21f314
-timeCreated: 1493571237
+guid: 562515495b58f474394a42f233576d8e
+timeCreated: 1493635512
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
   fileIDToRecycleName:
-    100000: ArrowHighlight
+    100000: ArrowNSWE
     100002: //RootNode
-    400000: ArrowHighlight
+    400000: ArrowNSWE
     400002: //RootNode
-    2300000: ArrowHighlight
-    3300000: ArrowHighlight
-    4300000: ArrowHighlight
+    2300000: ArrowNSWE
+    3300000: ArrowNSWE
+    4300000: ArrowNSWE
   materials:
     importMaterials: 1
     materialName: 0
