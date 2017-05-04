@@ -319,6 +319,7 @@ public class RubiksCubeModule : MonoBehaviour
                     {
                         _isSolved = true;
                         Module.HandlePass();
+                        Debug.LogFormat("[Rubik’s Cube #{0}] Module solved.", _moduleId);
                         if (_selectedPusher != null)
                         {
                             _selectedPusher.MeshRenderer.enabled = false;
