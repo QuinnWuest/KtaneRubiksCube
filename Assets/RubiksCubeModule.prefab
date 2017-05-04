@@ -313,7 +313,7 @@ GameObject:
   - 23: {fileID: 23000012685712688}
   - 114: {fileID: 114000014274415444}
   m_Layer: 0
-  m_Name: White sticker
+  m_Name: D sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -382,7 +382,7 @@ GameObject:
   - 23: {fileID: 23000013169679094}
   - 114: {fileID: 114000012578464214}
   m_Layer: 0
-  m_Name: Yellow sticker
+  m_Name: U sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -400,7 +400,7 @@ GameObject:
   - 23: {fileID: 23000011249616576}
   - 114: {fileID: 114000013273119624}
   m_Layer: 0
-  m_Name: Green sticker
+  m_Name: R sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -437,7 +437,7 @@ GameObject:
   - 23: {fileID: 23000010152233454}
   - 114: {fileID: 114000013549453106}
   m_Layer: 0
-  m_Name: Yellow sticker
+  m_Name: U sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -455,7 +455,7 @@ GameObject:
   - 23: {fileID: 23000012478539362}
   - 114: {fileID: 114000013202626480}
   m_Layer: 0
-  m_Name: White sticker
+  m_Name: D sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -489,7 +489,7 @@ GameObject:
   - 23: {fileID: 23000012660143542}
   - 114: {fileID: 114000013024257510}
   m_Layer: 0
-  m_Name: White sticker
+  m_Name: D sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -507,7 +507,7 @@ GameObject:
   - 23: {fileID: 23000011256254906}
   - 114: {fileID: 114000011625013756}
   m_Layer: 0
-  m_Name: Blue sticker
+  m_Name: L sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -543,7 +543,7 @@ GameObject:
   - 23: {fileID: 23000012741528876}
   - 114: {fileID: 114000012309115262}
   m_Layer: 0
-  m_Name: Blue sticker
+  m_Name: L sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -617,7 +617,7 @@ GameObject:
   - 23: {fileID: 23000013349277184}
   - 114: {fileID: 114000010121092224}
   m_Layer: 0
-  m_Name: Blue sticker
+  m_Name: L sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -635,7 +635,7 @@ GameObject:
   - 23: {fileID: 23000011095039286}
   - 114: {fileID: 114000010001980724}
   m_Layer: 0
-  m_Name: Yellow sticker
+  m_Name: U sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -653,7 +653,7 @@ GameObject:
   - 23: {fileID: 23000011154186656}
   - 114: {fileID: 114000013105536826}
   m_Layer: 0
-  m_Name: Orange sticker
+  m_Name: B sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -689,7 +689,7 @@ GameObject:
   - 23: {fileID: 23000014001124402}
   - 114: {fileID: 114000012934292710}
   m_Layer: 0
-  m_Name: Yellow sticker
+  m_Name: U sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -742,7 +742,7 @@ GameObject:
   - 23: {fileID: 23000010443646980}
   - 114: {fileID: 114000011128759576}
   m_Layer: 0
-  m_Name: Orange sticker
+  m_Name: B sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -812,7 +812,7 @@ GameObject:
   - 23: {fileID: 23000010182591898}
   - 114: {fileID: 114000012197822318}
   m_Layer: 0
-  m_Name: Yellow sticker
+  m_Name: U sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -936,7 +936,7 @@ GameObject:
   - 23: {fileID: 23000010663999318}
   - 114: {fileID: 114000010024255354}
   m_Layer: 0
-  m_Name: Orange sticker
+  m_Name: B sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -954,7 +954,7 @@ GameObject:
   - 23: {fileID: 23000013575804314}
   - 114: {fileID: 114000014276739034}
   m_Layer: 0
-  m_Name: White sticker
+  m_Name: D sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -972,7 +972,7 @@ GameObject:
   - 23: {fileID: 23000013987257600}
   - 114: {fileID: 114000012846465170}
   m_Layer: 0
-  m_Name: Green sticker
+  m_Name: R sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -990,7 +990,7 @@ GameObject:
   - 23: {fileID: 23000012754193118}
   - 114: {fileID: 114000011327548086}
   m_Layer: 0
-  m_Name: Orange sticker
+  m_Name: B sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1026,7 +1026,7 @@ GameObject:
   - 23: {fileID: 23000010497134790}
   - 114: {fileID: 114000012581250392}
   m_Layer: 0
-  m_Name: Green sticker
+  m_Name: R sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1044,7 +1044,7 @@ GameObject:
   - 23: {fileID: 23000011649196236}
   - 114: {fileID: 114000012379087516}
   m_Layer: 0
-  m_Name: Blue sticker
+  m_Name: L sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1080,7 +1080,7 @@ GameObject:
   - 23: {fileID: 23000011022109152}
   - 114: {fileID: 114000013025865338}
   m_Layer: 0
-  m_Name: Blue sticker
+  m_Name: L sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1135,7 +1135,7 @@ GameObject:
   - 23: {fileID: 23000012461839264}
   - 114: {fileID: 114000013525715728}
   m_Layer: 0
-  m_Name: White sticker
+  m_Name: D sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1204,7 +1204,7 @@ GameObject:
   - 23: {fileID: 23000013655333500}
   - 114: {fileID: 114000014037536836}
   m_Layer: 0
-  m_Name: White sticker
+  m_Name: D sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1273,7 +1273,7 @@ GameObject:
   - 23: {fileID: 23000011007433384}
   - 114: {fileID: 114000011542365774}
   m_Layer: 0
-  m_Name: Orange sticker
+  m_Name: B sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1309,7 +1309,7 @@ GameObject:
   - 23: {fileID: 23000010986005014}
   - 114: {fileID: 114000013787303728}
   m_Layer: 0
-  m_Name: Orange sticker
+  m_Name: B sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1327,7 +1327,7 @@ GameObject:
   - 23: {fileID: 23000011029076442}
   - 114: {fileID: 114000012801131550}
   m_Layer: 0
-  m_Name: Green sticker
+  m_Name: R sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1363,7 +1363,7 @@ GameObject:
   - 23: {fileID: 23000011228606762}
   - 114: {fileID: 114000013119985132}
   m_Layer: 0
-  m_Name: White sticker
+  m_Name: D sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1381,7 +1381,7 @@ GameObject:
   - 23: {fileID: 23000012476740840}
   - 114: {fileID: 114000013098923248}
   m_Layer: 0
-  m_Name: Red sticker
+  m_Name: F sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1399,7 +1399,7 @@ GameObject:
   - 23: {fileID: 23000010670157426}
   - 114: {fileID: 114000013436180634}
   m_Layer: 0
-  m_Name: Red sticker
+  m_Name: F sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1417,7 +1417,7 @@ GameObject:
   - 23: {fileID: 23000011698701706}
   - 114: {fileID: 114000010215888086}
   m_Layer: 0
-  m_Name: Green sticker
+  m_Name: R sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1435,7 +1435,7 @@ GameObject:
   - 23: {fileID: 23000010423174614}
   - 114: {fileID: 114000011000289754}
   m_Layer: 0
-  m_Name: Yellow sticker
+  m_Name: U sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1453,7 +1453,7 @@ GameObject:
   - 23: {fileID: 23000012954480808}
   - 114: {fileID: 114000013226895134}
   m_Layer: 0
-  m_Name: Blue sticker
+  m_Name: L sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1489,7 +1489,7 @@ GameObject:
   - 23: {fileID: 23000012389412998}
   - 114: {fileID: 114000011319373372}
   m_Layer: 0
-  m_Name: Red sticker
+  m_Name: F sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1507,7 +1507,7 @@ GameObject:
   - 23: {fileID: 23000013864311222}
   - 114: {fileID: 114000013524815208}
   m_Layer: 0
-  m_Name: Green sticker
+  m_Name: R sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1525,7 +1525,7 @@ GameObject:
   - 23: {fileID: 23000011219514246}
   - 114: {fileID: 114000011535151918}
   m_Layer: 0
-  m_Name: Blue sticker
+  m_Name: L sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1543,7 +1543,7 @@ GameObject:
   - 23: {fileID: 23000010669993228}
   - 114: {fileID: 114000010517800352}
   m_Layer: 0
-  m_Name: White sticker
+  m_Name: D sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1578,7 +1578,7 @@ GameObject:
   - 23: {fileID: 23000012400344774}
   - 114: {fileID: 114000010083045650}
   m_Layer: 0
-  m_Name: Orange sticker
+  m_Name: B sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1687,7 +1687,7 @@ GameObject:
   - 23: {fileID: 23000010332892714}
   - 114: {fileID: 114000013375752604}
   m_Layer: 0
-  m_Name: Green sticker
+  m_Name: R sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1723,7 +1723,7 @@ GameObject:
   - 23: {fileID: 23000013107182616}
   - 114: {fileID: 114000013313338118}
   m_Layer: 0
-  m_Name: Blue sticker
+  m_Name: L sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1759,7 +1759,7 @@ GameObject:
   - 23: {fileID: 23000012330836776}
   - 114: {fileID: 114000012900031304}
   m_Layer: 0
-  m_Name: Red sticker
+  m_Name: F sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1796,7 +1796,7 @@ GameObject:
   - 23: {fileID: 23000012176563066}
   - 114: {fileID: 114000011140267492}
   m_Layer: 0
-  m_Name: White sticker
+  m_Name: D sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1832,7 +1832,7 @@ GameObject:
   - 23: {fileID: 23000010507217582}
   - 114: {fileID: 114000013807659932}
   m_Layer: 0
-  m_Name: Blue sticker
+  m_Name: L sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1850,7 +1850,7 @@ GameObject:
   - 23: {fileID: 23000012763507068}
   - 114: {fileID: 114000012122908768}
   m_Layer: 0
-  m_Name: Yellow sticker
+  m_Name: U sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1868,7 +1868,7 @@ GameObject:
   - 23: {fileID: 23000012717694236}
   - 114: {fileID: 114000012589707222}
   m_Layer: 0
-  m_Name: Green sticker
+  m_Name: R sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1886,7 +1886,7 @@ GameObject:
   - 23: {fileID: 23000012658364258}
   - 114: {fileID: 114000011443924684}
   m_Layer: 0
-  m_Name: Orange sticker
+  m_Name: B sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1922,7 +1922,7 @@ GameObject:
   - 23: {fileID: 23000011091832898}
   - 114: {fileID: 114000011807171840}
   m_Layer: 0
-  m_Name: Orange sticker
+  m_Name: B sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1958,7 +1958,7 @@ GameObject:
   - 23: {fileID: 23000011273551432}
   - 114: {fileID: 114000012342479200}
   m_Layer: 0
-  m_Name: Red sticker
+  m_Name: F sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1976,7 +1976,7 @@ GameObject:
   - 23: {fileID: 23000012475012704}
   - 114: {fileID: 114000010366487658}
   m_Layer: 0
-  m_Name: Red sticker
+  m_Name: F sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1994,7 +1994,7 @@ GameObject:
   - 23: {fileID: 23000010677518874}
   - 114: {fileID: 114000011818557932}
   m_Layer: 0
-  m_Name: Red sticker
+  m_Name: F sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2012,7 +2012,7 @@ GameObject:
   - 23: {fileID: 23000013293873462}
   - 114: {fileID: 114000013254266418}
   m_Layer: 0
-  m_Name: Yellow sticker
+  m_Name: U sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2118,7 +2118,7 @@ GameObject:
   - 23: {fileID: 23000013421017940}
   - 114: {fileID: 114000012338419170}
   m_Layer: 0
-  m_Name: Red sticker
+  m_Name: F sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2170,7 +2170,7 @@ GameObject:
   - 23: {fileID: 23000011635541786}
   - 114: {fileID: 114000014059327716}
   m_Layer: 0
-  m_Name: Red sticker
+  m_Name: F sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2188,7 +2188,7 @@ GameObject:
   - 23: {fileID: 23000012253316974}
   - 114: {fileID: 114000011566905090}
   m_Layer: 0
-  m_Name: Green sticker
+  m_Name: R sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2242,7 +2242,7 @@ GameObject:
   - 23: {fileID: 23000010019435540}
   - 114: {fileID: 114000011766231550}
   m_Layer: 0
-  m_Name: Yellow sticker
+  m_Name: U sticker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2594,10 +2594,10 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013929798766}
-  m_LocalRotation: {x: 0.43353385, y: 0.3963087, z: 0.2923551, w: 0.7546631}
+  m_LocalRotation: {x: 0.4332655, y: 0.359558, z: 0.2528144, w: 0.7868189}
   m_LocalPosition: {x: 0, y: 0.09, z: 0}
   m_LocalScale: {x: 0.015, y: 0.015, z: 0.015}
-  m_LocalEulerAnglesHint: {x: 25, y: 70, z: 60}
+  m_LocalEulerAnglesHint: {x: 30, y: 65, z: 55}
   m_Children:
   - {fileID: 4000010402675894}
   - {fileID: 4000011757126956}
@@ -8634,6 +8634,13 @@ MonoBehaviour:
   - {fileID: 114000011294610724}
   - {fileID: 114000013853703020}
   - {fileID: 114000012485986634}
+  StickerMaterials:
+  - {fileID: 2100000, guid: a78e23ea90ca04f4a8455e36fdbdee64, type: 2}
+  - {fileID: 2100000, guid: deda35d961bb56d4ea329a99094520b1, type: 2}
+  - {fileID: 2100000, guid: 43aaa69d63fda10448dba1b885868583, type: 2}
+  - {fileID: 2100000, guid: c67f383e3e108474ab1245c39296a3bb, type: 2}
+  - {fileID: 2100000, guid: 3c56d54deede7ff4c903302accba3732, type: 2}
+  - {fileID: 2100000, guid: 873e8d79c201b1747938d94c9f5c9e93, type: 2}
   OffAxis: {fileID: 4000013849328254}
   OnAxis: {fileID: 4000011757126956}
   ArrowNSWE: {fileID: 4300000, guid: 562515495b58f474394a42f233576d8e, type: 3}
