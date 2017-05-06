@@ -235,19 +235,18 @@ public class RubiksCubeModule : MonoBehaviour
             Debug.LogFormat("[Rubik’s Cube #{0}] R face is NOT red/green/blue. Moves now: {1}", _moduleId, string.Join(" ", moves.Select(m => m.Name).ToArray()));
         }
 
-        var msg = "";
         switch (_colR)
         {
             case 2: // red
             case 0: // yellow
-                msg = "R face is red/yellow: change the first five moves to their opposites. ";
+                Debug.LogFormat("[Rubik’s Cube #{0}] R face is red/yellow: change the first five moves to their opposites.", _moduleId);
                 for (int i = 0; i < 5; i++)
                     moves[i] = moves[i].Reverse;
                 break;
 
             case 3: // green
             case 5: // white
-                msg = "R face is green/white: reverse the order of all the moves. ";
+                Debug.LogFormat("[Rubik’s Cube #{0}] R face is green/white: reverse the order of all the moves.", _moduleId);
                 for (int i = 0; i < 5; i++)
                 {
                     var t = moves[i];
@@ -257,7 +256,7 @@ public class RubiksCubeModule : MonoBehaviour
                 break;
         }
 
-        Debug.LogFormat("[Rubik’s Cube #{0}] {1}Solution: {2}", _moduleId, msg, string.Join(" ", moves.Select(m => m.Name).ToArray()));
+        Debug.LogFormat("[Rubik’s Cube #{0}] Solution: {1}", _moduleId, string.Join(" ", moves.Select(m => m.Name).ToArray()));
 
         _queue.Enqueue(90);
         foreach (var move in moves.Reverse())
