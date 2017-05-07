@@ -422,9 +422,9 @@ public class RubiksCubeModule : MonoBehaviour
                 yield return Quaternion.Euler(easeInOutQuad(i, 0, 50, 50), 0, 0);
                 yield return null;
             }
-            for (int i = 0; i <= 360; i += 5)
+            for (int i = 0; i <= 720; i += 5)
             {
-                yield return Quaternion.Euler(50, 0, 0) * Quaternion.Euler(0, easeInOutQuad(i, 0, 360, 360), 0);
+                yield return Quaternion.Euler(50, 0, 0) * Quaternion.Euler(0, easeInOutQuad((float)i/2, 0, 360, 360), 0);
                 yield return null;
             }
             for (int i = 0; i <= 50; i += 5)
