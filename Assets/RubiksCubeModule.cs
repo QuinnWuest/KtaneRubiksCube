@@ -1,10 +1,9 @@
 ﻿using System;
-using RubiksCube;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using RubiksCube;
 using UnityEngine;
-using Rnd = UnityEngine.Random;
 
 /// <summary>
 /// On the Subject of Rubik’s Cube
@@ -32,12 +31,11 @@ public class RubiksCubeModule : MonoBehaviour
 
     private Queue<object> _queue = new Queue<object>();
     private Stack<FaceRotation> _performedMoves = new Stack<FaceRotation>();
-    private Pusher[] _pushers;
 
     private bool _isSolved = false;
     private Pusher _selectedPusher = null;
-    private int[] _columnShifts;
-    private int _serialIgnore, _colR;
+
+    const string _faces = "ULFDRB";
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
@@ -81,14 +79,101 @@ public class RubiksCubeModule : MonoBehaviour
     {
         _moduleId = _moduleIdCounter++;
         //Cube.localEulerAngles = new Vector3(25, 70, 60);
+        StartCoroutine(WaitForSerialNumber());
+    }
+
+    IEnumerator WaitForSerialNumber()
+    {
+        yield return null;
+
+        var table = @"L’,F’;D’,U’;U,B’;F,B;L,D;R’,U;U’,F;B’,L’;B,R;D,L;R,D’;F’,R’".Split(';').Select(row => row.Split(',').Select(str => _moves[str]).ToArray()).ToArray();
+        var colorNames = "Yellow|Blue|Red|Green|Orange|White".Split('|');
+
+        // Find a combination of colors that generates a non-trivial solution
+        int retries = 10;
+        retry:
 
         var colors = Enumerable.Range(0, 6).ToArray().Shuffle();
-        var colorNames = "Yellow|Blue|Red|Green|Orange|White".Split('|');
-        var faces = "ULFDRB";
-        Debug.LogFormat("[Rubik’s Cube #{0}] Face colors: {1}", _moduleId, string.Join(", ", Enumerable.Range(0, 6).Select(i => string.Format("{0}={1}", faces[i], colorNames[colors[i]])).ToArray()));
-        _columnShifts = newArray(colors[0] + 1, colors[1] + 1, colors[2] + 1);
-        _serialIgnore = colors[3];
-        _colR = colors[4];
+        var columnShifts = newArray(colors[0] + 1, colors[1] + 1, colors[2] + 1);
+        var serialIgnore = colors[3];
+        var colR = colors[4];   // color of the R (right) face
+
+        var ser = Bomb.GetSerialNumber().Remove(serialIgnore, 1);
+        var rows = ser.Select(ch => ch >= '0' && ch <= '9' ? ch - '0' : ch - 'A' + 10).Select(n => (n / 3 + columnShifts[n % 3]) % table.Length).ToArray();
+        var moves1 = (colR >= 1 && colR <= 3)
+            ? rows.SelectMany(r => table[r]).ToList()
+            : rows.Select(r => table[r][0]).Concat(rows.Select(r => table[r][1])).ToList();
+
+        var moves2 = moves1.ToList();
+        switch (colR)
+        {
+            case 2: // red
+            case 0: // yellow
+                for (int i = 0; i < 5; i++)
+                    moves2[i] = moves2[i].Reverse;
+                break;
+
+            case 3: // green
+            case 5: // white
+                for (int i = 0; i < 5; i++)
+                {
+                    var t = moves2[i];
+                    moves2[i] = moves2[9 - i];
+                    moves2[9 - i] = t;
+                }
+                break;
+        }
+
+        // Now try to minimize the sequence
+        var ix = 0;
+        var moves = moves2.ToList();
+        while (ix < moves.Count)
+        {
+            var n = 1;
+            var affected = new List<int>();
+            for (int j = ix + 1; j < moves.Count; j++)
+            {
+                if (moves[j] == moves[ix])
+                {
+                    n++;
+                    affected.Add(j);
+                }
+                else if (moves[j] == moves[ix].Reverse)
+                {
+                    n--;
+                    affected.Add(j);
+                }
+                else if (!moves[ix].OppositeSide.Contains(moves[j]))
+                    break;
+            }
+
+            switch ((n % 4 + 4) % 4)
+            {
+                case 0:
+                    // the moves cancel each other out completely.
+                    for (int k = affected.Count - 1; k >= 0; k--)
+                        moves.RemoveAt(affected[k]);
+                    moves.RemoveAt(ix);
+                    ix = 0;
+                    continue;
+
+                case 3:
+                    // e.g. 3 of the same move ⇒ reverse move
+                    for (int k = affected.Count - 1; k >= 0; k--)
+                        moves.RemoveAt(affected[k]);
+                    moves[ix] = moves[ix].Reverse;
+                    ix = 0;
+                    continue;
+            }
+
+            ix++;
+        }
+
+        // At this point, if the sequence is shorter than 8 moves, we want to generate a different sequence of colors.
+        if (moves.Count < 8 && retries-- > 0)
+            goto retry;
+
+        // Set all the stickers to the desired colors and populate the _cubelets array
         _cubelets = new Transform[3, 3, 3];
         for (int x = 0; x < 3; x++)
             for (int y = 0; y < 3; y++)
@@ -96,16 +181,103 @@ public class RubiksCubeModule : MonoBehaviour
                     if (x != 1 || y != 1 || z != 1)
                     {
                         _cubelets[x, y, z] = OffAxis.Find(string.Format("Cubelet ({0}, {1}, {2})", x, y, z));
-                        for (int i = 0; i < faces.Length; i++)
+                        for (int i = 0; i < _faces.Length; i++)
                         {
-                            var sticker = _cubelets[x, y, z].Find(string.Format("{0} sticker", faces[i]));
+                            var sticker = _cubelets[x, y, z].Find(string.Format("{0} sticker", _faces[i]));
                             if (sticker != null)
                                 sticker.GetComponent<MeshRenderer>().material = StickerMaterials[colors[i]];
                         }
                     }
 
+        Debug.LogFormat("[Rubik’s Cube #{0}] Face colors: {1}", _moduleId, string.Join(", ", Enumerable.Range(0, 6).Select(i => string.Format("{0}={1}", _faces[i], colorNames[colors[i]])).ToArray()));
+        Debug.LogFormat("[Rubik’s Cube #{0}] Column shifts: U={1}, L={2}, F={3}", _moduleId, columnShifts[0], columnShifts[1], columnShifts[2]);
+        Debug.LogFormat("[Rubik’s Cube #{0}] Ignoring serial number character #{1}: {2}", _moduleId, serialIgnore + 1, string.Join(", ", rows.Select((r, rIx) => string.Format("{0}={1}/{2}", ser[rIx], table[r][0].Name, table[r][1].Name)).ToArray()));
+        if (colR >= 1 && colR <= 3)
+            Debug.LogFormat("[Rubik’s Cube #{0}] R face is red/green/blue. Moves now: {1}", _moduleId, string.Join(" ", moves1.Select(m => m.Name).ToArray()));
+        else
+            Debug.LogFormat("[Rubik’s Cube #{0}] R face is NOT red/green/blue. Moves now: {1}", _moduleId, string.Join(" ", moves1.Select(m => m.Name).ToArray()));
+        if (colR == 0 || colR == 2)
+            Debug.LogFormat("[Rubik’s Cube #{0}] R face is red/yellow: change the first five moves to their opposites.", _moduleId);
+        else
+            Debug.LogFormat("[Rubik’s Cube #{0}] R face is green/white: reverse the order of all the moves.", _moduleId);
+        Debug.LogFormat("[Rubik’s Cube #{0}] Solution: {1}", _moduleId, string.Join(" ", moves2.Select(m => m.Name).ToArray()));
+        Debug.LogFormat("[Rubik’s Cube #{0}] Minimized solution: {1}", _moduleId, string.Join(" ", moves.Select(m => m.Name).ToArray()));
+
         _cubeletsSolved = _cubelets;
-        Module.OnActivate += ActivateModule;
+        Module.OnActivate += delegate
+        {
+            var pusherMoveInfos = @"
+                B  = F002 C002 E311 B311 
+                B’ = B111 E111 C022 F022 
+                D  = B211 H211 A201 D201 
+                D’ = D001 A001 H011 B011 
+                F  = H111 K111 I022 L022 
+                F’ = L002 I002 K311 H311 
+                L  = C032 I032 G301 A301 
+                L’ = A101 G101 I012 C012 
+                R  = D101 J101 L012 F012 
+                R’ = F032 L032 J301 D301 
+                U  = J001 G001 K011 E011 
+                U’ = E211 K211 G201 J201 
+            "
+                .Split('\n')
+                .Select(s => s.Trim())
+                .Where(s => s.Length > 1)
+                .Select(s => s.Split('='))
+                .Select(inf => new
+                {
+                    Move = _moves[inf[0].Trim()],
+                    Pushers = inf[1].Trim().Split(' ').Select(str => Pushers[str[0] - 'A']).ToArray(),
+                    Rotations = inf[1].Trim().Split(' ').Select(str => new Vector3((str[1] - '0') * 90, (str[2] - '0') * 90, (str[3] - '0') * 90)).ToArray()
+                })
+                .ToArray();
+
+            for (int pix = 0; pix < Pushers.Length; pix++)
+                SetPusherEvents(new Pusher(
+                    selectable: Pushers[pix],
+                    moves: pusherMoveInfos.Where(inf => inf.Pushers.Contains(Pushers[pix])).Select(inf => inf.Move).ToArray(),
+                    moveIndexes: pusherMoveInfos.Where(inf => inf.Pushers.Contains(Pushers[pix])).Select(inf => Array.IndexOf(inf.Pushers, Pushers[pix])).ToArray(),
+                    localPos: pix % 3 == 0 ? new Vector3(3.01f, 4 * (pix / 9) - 2, 4 * ((pix / 3) % 3) - 2) : pix % 3 == 1 ? new Vector3(4 * (pix / 9) - 2, 4 * ((pix / 3) % 3) - 2, -3.01f) : new Vector3(4 * (pix / 9) - 2, 3.01f, 4 * ((pix / 3) % 3) - 2),
+                    localAngles: pusherMoveInfos.Where(inf => inf.Pushers.Contains(Pushers[pix])).Select(inf => inf.Rotations[Array.IndexOf(inf.Pushers, Pushers[pix])]).ToArray()
+                ));
+
+            _queue.Enqueue(90);
+            for (int i = moves.Count - 1; i >= 0; i--)
+                _queue.Enqueue(moves[i].Reverse);
+            _queue.Enqueue(5);
+
+            StartCoroutine(PerformMoves());
+
+            Bomb.OnBombExploded += delegate
+            {
+                if (!_isSolved && _performedMoves.Count > 0)
+                    Debug.LogFormat("[Rubik’s Cube #{0}] Moves performed before reset: {1}", _moduleId, string.Join(" ", _performedMoves.Reverse().Select(m => m.Name).ToArray()));
+            };
+
+            Reset.OnInteract += delegate
+            {
+                Reset.AddInteractionPunch();
+                Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, Reset.transform);
+                if (_isSolved || _performedMoves.Count == 0)
+                    return false;
+                Debug.LogFormat("[Rubik’s Cube #{0}] Moves performed before reset: {1}", _moduleId, string.Join(" ", _performedMoves.Reverse().Select(m => m.Name).ToArray()));
+                _queue.Enqueue(18);
+                while (_performedMoves.Count > 0)
+                    _queue.Enqueue(_performedMoves.Pop().Reverse);
+                _queue.Enqueue(5);
+                return false;
+            };
+
+            MainSelectable.OnCancel += delegate
+            {
+                if (_selectedPusher != null)
+                {
+                    _selectedPusher.MeshRenderer.enabled = false;
+                    _selectedPusher = null;
+                }
+                return true;
+            };
+        };
     }
 
     private void SetPusherEvents(Pusher pusher)
@@ -180,122 +352,6 @@ public class RubiksCubeModule : MonoBehaviour
 
     private static T[] newArray<T>(params T[] array) { return array; }
 
-    void ActivateModule()
-    {
-        var pusherMoveInfos = @"
-            B  = F002 C002 E311 B311 
-            B’ = B111 E111 C022 F022 
-            D  = B211 H211 A201 D201 
-            D’ = D001 A001 H011 B011 
-            F  = H111 K111 I022 L022 
-            F’ = L002 I002 K311 H311 
-            L  = C032 I032 G301 A301 
-            L’ = A101 G101 I012 C012 
-            R  = D101 J101 L012 F012 
-            R’ = F032 L032 J301 D301 
-            U  = J001 G001 K011 E011 
-            U’ = E211 K211 G201 J201 
-        "
-            .Split('\n')
-            .Select(s => s.Trim())
-            .Where(s => s.Length > 1)
-            .Select(s => s.Split('='))
-            .Select(inf => new
-            {
-                Move = _moves[inf[0].Trim()],
-                Pushers = inf[1].Trim().Split(' ').Select(str => Pushers[str[0] - 'A']).ToArray(),
-                Rotations = inf[1].Trim().Split(' ').Select(str => new Vector3((str[1] - '0') * 90, (str[2] - '0') * 90, (str[3] - '0') * 90)).ToArray()
-            })
-            .ToArray();
-
-        _pushers = Pushers.Select((obj, ix) => new Pusher(
-            selectable: obj,
-            moves: pusherMoveInfos.Where(inf => inf.Pushers.Contains(obj)).Select(inf => inf.Move).ToArray(),
-            moveIndexes: pusherMoveInfos.Where(inf => inf.Pushers.Contains(obj)).Select(inf => Array.IndexOf(inf.Pushers, obj)).ToArray(),
-            localPos: ix % 3 == 0 ? new Vector3(3.01f, 4 * (ix / 9) - 2, 4 * ((ix / 3) % 3) - 2) : ix % 3 == 1 ? new Vector3(4 * (ix / 9) - 2, 4 * ((ix / 3) % 3) - 2, -3.01f) : new Vector3(4 * (ix / 9) - 2, 3.01f, 4 * ((ix / 3) % 3) - 2),
-            localAngles: pusherMoveInfos.Where(inf => inf.Pushers.Contains(obj)).Select(inf => inf.Rotations[Array.IndexOf(inf.Pushers, obj)]).ToArray()
-        )).ToArray();
-        foreach (var pusher in _pushers)
-            SetPusherEvents(pusher);
-
-        var table = @"L’,F’;D’,U’;U,B’;F,B;L,D;R’,U;U’,F;B’,L’;B,R;D,L;R,D’;F’,R’".Split(';').Select(row => row.Split(',').Select(str => _moves[str]).ToArray()).ToArray();
-        Debug.LogFormat("[Rubik’s Cube #{0}] Column shifts: U={1}, L={2}, F={3}", _moduleId, _columnShifts[0], _columnShifts[1], _columnShifts[2]);
-        var ser = Bomb.GetSerialNumber().Remove(_serialIgnore, 1);
-        var rows = ser.Select(ch => ch >= '0' && ch <= '9' ? ch - '0' : ch - 'A' + 10).Select(n => (n / 3 + _columnShifts[n % 3]) % table.Length).ToArray();
-        Debug.LogFormat("[Rubik’s Cube #{0}] Ignoring serial number character #{1}: {2}", _moduleId, _serialIgnore + 1, string.Join(", ", rows.Select((r, rIx) => string.Format("{0}={1}/{2}", ser[rIx], table[r][0].Name, table[r][1].Name)).ToArray()));
-        FaceRotation[] moves;
-        if (_colR >= 1 && _colR <= 3)
-        {
-            moves = rows.SelectMany(r => table[r]).ToArray();
-            Debug.LogFormat("[Rubik’s Cube #{0}] R face is red/green/blue. Moves now: {1}", _moduleId, string.Join(" ", moves.Select(m => m.Name).ToArray()));
-        }
-        else
-        {
-            moves = rows.Select(r => table[r][0]).Concat(rows.Select(r => table[r][1])).ToArray();
-            Debug.LogFormat("[Rubik’s Cube #{0}] R face is NOT red/green/blue. Moves now: {1}", _moduleId, string.Join(" ", moves.Select(m => m.Name).ToArray()));
-        }
-
-        switch (_colR)
-        {
-            case 2: // red
-            case 0: // yellow
-                Debug.LogFormat("[Rubik’s Cube #{0}] R face is red/yellow: change the first five moves to their opposites.", _moduleId);
-                for (int i = 0; i < 5; i++)
-                    moves[i] = moves[i].Reverse;
-                break;
-
-            case 3: // green
-            case 5: // white
-                Debug.LogFormat("[Rubik’s Cube #{0}] R face is green/white: reverse the order of all the moves.", _moduleId);
-                for (int i = 0; i < 5; i++)
-                {
-                    var t = moves[i];
-                    moves[i] = moves[9 - i];
-                    moves[9 - i] = t;
-                }
-                break;
-        }
-
-        Debug.LogFormat("[Rubik’s Cube #{0}] Solution: {1}", _moduleId, string.Join(" ", moves.Select(m => m.Name).ToArray()));
-
-        _queue.Enqueue(90);
-        foreach (var move in moves.Reverse())
-            _queue.Enqueue(move.Reverse);
-        _queue.Enqueue(5);
-
-        StartCoroutine(PerformMoves());
-
-        Bomb.OnBombExploded += delegate
-        {
-            if (!_isSolved && _performedMoves.Count > 0)
-                Debug.LogFormat("[Rubik’s Cube #{0}] Moves performed before reset: {1}", _moduleId, string.Join(" ", _performedMoves.Reverse().Select(m => m.Name).ToArray()));
-        };
-
-        Reset.OnInteract += delegate
-        {
-            Reset.AddInteractionPunch();
-            Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, Reset.transform);
-            if (_isSolved || _performedMoves.Count == 0)
-                return false;
-            Debug.LogFormat("[Rubik’s Cube #{0}] Moves performed before reset: {1}", _moduleId, string.Join(" ", _performedMoves.Reverse().Select(m => m.Name).ToArray()));
-            _queue.Enqueue(18);
-            while (_performedMoves.Count > 0)
-                _queue.Enqueue(_performedMoves.Pop().Reverse);
-            _queue.Enqueue(5);
-            return false;
-        };
-
-        MainSelectable.OnCancel += delegate
-        {
-            if (_selectedPusher != null)
-            {
-                _selectedPusher.MeshRenderer.enabled = false;
-                _selectedPusher = null;
-            }
-            return true;
-        };
-    }
-
     private IEnumerator PerformMoves()
     {
         int speed = 5;
@@ -363,6 +419,7 @@ public class RubiksCubeModule : MonoBehaviour
             MapZ = mapZ;
         }
         public FaceRotation Reverse { get; set; }
+        public FaceRotation[] OppositeSide { get; set; }
     }
 
     private static Dictionary<string, FaceRotation> _moves;
@@ -384,7 +441,10 @@ public class RubiksCubeModule : MonoBehaviour
             new FaceRotation("D’", (x, y, z) => y == 2, i => new Vector3(0, i, 0), (x, y, z) => 2 - z, (x, y, z) => y, (x, y, z) => x));
 
         for (int i = 0; i < moves.Length; i++)
+        {
             moves[i].Reverse = moves[i ^ 1];
+            moves[i].OppositeSide = new[] { moves[i ^ 2], moves[i ^ 3] };
+        }
 
         _moves = moves.ToDictionary(f => f.Name, StringComparer.InvariantCultureIgnoreCase);
     }
