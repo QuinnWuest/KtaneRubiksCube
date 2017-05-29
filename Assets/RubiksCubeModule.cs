@@ -251,7 +251,7 @@ public class RubiksCubeModule : MonoBehaviour
             Bomb.OnBombExploded += delegate
             {
                 if (!_isSolved && _performedMoves.Count > 0)
-                    Debug.LogFormat("[Rubik’s Cube #{0}] Moves performed before reset: {1}", _moduleId, string.Join(" ", _performedMoves.Reverse().Select(m => m.Name).ToArray()));
+                    Debug.LogFormat("[Rubik’s Cube #{0}] Moves performed before bomb exploded: {1}", _moduleId, string.Join(" ", _performedMoves.Reverse().Select(m => m.Name).ToArray()));
             };
 
             Reset.OnInteract += delegate
