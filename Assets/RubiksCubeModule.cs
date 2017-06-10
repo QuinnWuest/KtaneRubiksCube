@@ -449,13 +449,13 @@ public class RubiksCubeModule : MonoBehaviour
         _moves = moves.ToDictionary(f => f.Name, StringComparer.InvariantCultureIgnoreCase);
     }
 
-    private float easeInOutQuad(float t, float b, float c, float d)
+    private float easeInOutQuad(float time, float start, float end, float duration)
     {
-        t /= d / 2;
-        if (t < 1)
-            return c / 2 * t * t + b;
-        t--;
-        return -c / 2 * (t * (t - 2) - 1) + b;
+        time /= duration / 2;
+        if (time < 1)
+            return (end - start) / 2 * time * time + start;
+        time--;
+        return -(end - start) / 2 * (time * (time - 2) - 1) + start;
     }
 
     private float easeOutSine(float t, float b, float c, float d)
@@ -483,7 +483,7 @@ public class RubiksCubeModule : MonoBehaviour
         if (command.Trim().Equals("rotate", StringComparison.InvariantCultureIgnoreCase))
         {
             bool frontFace = transform.root.eulerAngles.z < 1;  //eulerAngles.z = 0 on front face, 180 on back face.
-            int angle = 60;
+            const int angle = 60;
 
             for (float i = 0; i <= angle; i += getRotateRate(0.5f, 150))
             {
@@ -502,10 +502,11 @@ public class RubiksCubeModule : MonoBehaviour
             for (float i = 0; i <= angle; i += getRotateRate(0.5f, 150))
             {
                 yield return frontFace
-                    ? Quaternion.Euler(easeInOutQuad(i, angle, -angle, angle), 0, 0)
-                    : Quaternion.Euler(easeInOutQuad(i, -angle, angle, angle), 0, 0);
+                    ? Quaternion.Euler(easeInOutQuad(i, angle, 0, angle), 0, 0)
+                    : Quaternion.Euler(easeInOutQuad(i, -angle, 0, angle), 0, 0);
                 yield return null;
             }
+            yield return Quaternion.Euler(0, 0, 0);
             yield break;
         }
 
