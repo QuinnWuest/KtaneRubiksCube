@@ -463,6 +463,11 @@ public class RubiksCubeModule : MonoBehaviour
         return (float) (c * Math.Sin(t / d * (Math.PI / 2)) + b);
     }
 
+    private float getRotateRate(float targetTime, float rate)
+    {
+        return rate * (Time.deltaTime / targetTime);
+    }
+
     IEnumerator ProcessTwitchCommand(string command)
     {
         if (_isSolved)
@@ -480,21 +485,21 @@ public class RubiksCubeModule : MonoBehaviour
             bool frontFace = transform.root.eulerAngles.z < 1;  //eulerAngles.z = 0 on front face, 180 on back face.
             int angle = 60;
 
-            for (int i = 0; i <= angle; i += 5)
+            for (float i = 0; i <= angle; i += getRotateRate(0.5f, 150))
             {
                 yield return frontFace
                     ? Quaternion.Euler(easeInOutQuad(i, 0, angle, angle), 0, 0)
                     : Quaternion.Euler(easeInOutQuad(i, 0, -angle, angle), 0, 0);
                 yield return null;
             }
-            for (float i = 0; i <= 360; i += 1.25f)
+            for (float i = 0; i <= 360; i += getRotateRate(10, 750))
             {
                 yield return frontFace
                     ? Quaternion.Euler(angle, 0, 0) * Quaternion.Euler(0, easeInOutQuad(i, 0, 360, 360), 0)
                     : Quaternion.Euler(-angle, 0, 0) * Quaternion.Euler(0, easeInOutQuad(i, 0, -360, 360), 0);
                 yield return null;
             }
-            for (int i = 0; i <= angle; i += 5)
+            for (float i = 0; i <= angle; i += getRotateRate(0.5f, 150))
             {
                 yield return frontFace
                     ? Quaternion.Euler(easeInOutQuad(i, angle, -angle, angle), 0, 0)
