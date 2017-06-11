@@ -482,6 +482,8 @@ public class RubiksCubeModule : MonoBehaviour
 
         if (command.Trim().Equals("rotate", StringComparison.InvariantCultureIgnoreCase))
         {
+            yield return null;
+
             bool frontFace = transform.root.eulerAngles.z < 1;  //eulerAngles.z = 0 on front face, 180 on back face.
             const int angle = 60;
 
