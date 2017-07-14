@@ -151,8 +151,9 @@ public class FakeBombInfo : MonoBehaviour
 
     void Awake()
     {
-        widgets = new Widget[5];
-        for (int a = 0; a < 5; a++)
+        const int numWidgets = 10;
+        widgets = new Widget[numWidgets];
+        for (int a = 0; a < numWidgets; a++)
         {
             int r = Random.Range(0, 3);
             if (r == 0) widgets[a] = new PortWidget();
@@ -179,7 +180,7 @@ public class FakeBombInfo : MonoBehaviour
         Debug.Log("Serial: " + serial);
     }
 
-    float startupTime = 3f;
+    float startupTime = .5f;
 
     public delegate void LightsOn();
     public LightsOn ActivateLights;
@@ -401,7 +402,7 @@ public class TestHarness : MonoBehaviour
                 if (f.FieldType.Equals(typeof(KMGameInfo)))
                 {
                     KMGameInfo component = (KMGameInfo) f.GetValue(s);
-                    component.OnLightsChange += new KMGameInfo.KMLightsChangeDelegate(fakeInfo.OnLights);
+                    fakeInfo.OnLights += on => component.OnLightsChange(on);
                     //component.OnAlarmClockChange += new KMGameInfo.KMAlarmClockChangeDelegate(fakeInfo.OnAlarm);
                     continue;
                 }

@@ -27,7 +27,7 @@ public class RubiksCubeModule : MonoBehaviour
     public Mesh Arrow;
 
     private Transform[,,] _cubeletsSolved;
-    private Transform[,,] _cubelets;
+    private CubeletInfo[,,] _cubelets;
 
     private Queue<object> _queue = new Queue<object>();
     private Stack<FaceRotation> _performedMoves = new Stack<FaceRotation>();
@@ -174,16 +174,16 @@ public class RubiksCubeModule : MonoBehaviour
             goto retry;
 
         // Set all the stickers to the desired colors and populate the _cubelets array
-        _cubelets = new Transform[3, 3, 3];
+        _cubelets = new CubeletInfo[3, 3, 3];
         for (int x = 0; x < 3; x++)
             for (int y = 0; y < 3; y++)
                 for (int z = 0; z < 3; z++)
                     if (x != 1 || y != 1 || z != 1)
                     {
-                        _cubelets[x, y, z] = OffAxis.Find(string.Format("Cubelet ({0}, {1}, {2})", x, y, z));
+                        _cubelets[x, y, z] = new CubeletInfo(OffAxis.Find(string.Format("Cubelet ({0}, {1}, {2})", x, y, z)), Quaternion.identity);
                         for (int i = 0; i < _faces.Length; i++)
                         {
-                            var sticker = _cubelets[x, y, z].Find(string.Format("{0} sticker", _faces[i]));
+                            var sticker = _cubelets[x, y, z].Cubelet.Find(string.Format("{0} sticker", _faces[i]));
                             if (sticker != null)
                                 sticker.GetComponent<MeshRenderer>().material = StickerMaterials[colors[i]];
                         }
@@ -203,7 +203,13 @@ public class RubiksCubeModule : MonoBehaviour
         Debug.LogFormat("[Rubik’s Cube #{0}] Solution: {1}", _moduleId, string.Join(" ", moves2.Select(m => m.Name).ToArray()));
         Debug.LogFormat("[Rubik’s Cube #{0}] Minimized solution: {1}", _moduleId, string.Join(" ", moves.Select(m => m.Name).ToArray()));
 
-        _cubeletsSolved = _cubelets;
+        _cubeletsSolved = new Transform[3, 3, 3];
+        for (int x = 0; x < 3; x++)
+            for (int y = 0; y < 3; y++)
+                for (int z = 0; z < 3; z++)
+                    if (x != 1 || y != 1 || z != 1)
+                        _cubeletsSolved[x, y, z] = _cubelets[x, y, z].Cubelet;
+
         Module.OnActivate += delegate
         {
             var pusherMoveInfos = @"
@@ -391,13 +397,26 @@ public class RubiksCubeModule : MonoBehaviour
         }
     }
 
-    private bool isSolved(Transform[,,] cubelets)
+    private bool isSolved(CubeletInfo[,,] cubelets)
     {
+        Vector3 v;
+        float a;
+
         for (int x = 0; x < 3; x++)
             for (int y = 0; y < 3; y++)
                 for (int z = 0; z < 3; z++)
-                    if (cubelets[x, y, z] != _cubeletsSolved[x, y, z])
-                        return false;
+                    // Do not check the center faces. It is possible for those to be 180° rotated, which doesn’t count as wrong
+                    if ((x != 1 && y != 1) || (x != 1 && z != 1) || (y != 1 && z != 1))
+                    {
+                        // Check that the cubelet is in the correct slot
+                        if (cubelets[x, y, z].Cubelet != _cubeletsSolved[x, y, z])
+                            return false;
+                        // Check that the cubelet has the correct orientation
+                        cubelets[x, y, z].Rotation.ToAngleAxis(out a, out v);
+                        // The correct orientation could either have an angle of 0, or a magnitude of 0 (and, weirdly, an angle of 1)
+                        if (Mathf.Abs(a) > .01f && v.magnitude > .01f)
+                            return false;
+                    }
         return true;
     }
 
@@ -405,11 +424,11 @@ public class RubiksCubeModule : MonoBehaviour
     {
         public string Name { get; private set; }
         public Func<int, int, int, bool> OnAxis { get; private set; }
-        public Func<float, Vector3> Rotation { get; private set; }
+        public Func<float, Quaternion> Rotation { get; private set; }
         public Func<int, int, int, int> MapX { get; private set; }
         public Func<int, int, int, int> MapY { get; private set; }
         public Func<int, int, int, int> MapZ { get; private set; }
-        public FaceRotation(string name, Func<int, int, int, bool> onAxis, Func<float, Vector3> rotation, Func<int, int, int, int> mapX, Func<int, int, int, int> mapY, Func<int, int, int, int> mapZ)
+        public FaceRotation(string name, Func<int, int, int, bool> onAxis, Func<float, Quaternion> rotation, Func<int, int, int, int> mapX, Func<int, int, int, int> mapY, Func<int, int, int, int> mapZ)
         {
             Name = name;
             OnAxis = onAxis;
@@ -427,18 +446,18 @@ public class RubiksCubeModule : MonoBehaviour
     static RubiksCubeModule()
     {
         var moves = newArray(
-            new FaceRotation("F", (x, y, z) => z == 0, i => new Vector3(i, 0, 0), (x, y, z) => y, (x, y, z) => 2 - x, (x, y, z) => z),
-            new FaceRotation("F’", (x, y, z) => z == 0, i => new Vector3(-i, 0, 0), (x, y, z) => 2 - y, (x, y, z) => x, (x, y, z) => z),
-            new FaceRotation("B", (x, y, z) => z == 2, i => new Vector3(-i, 0, 0), (x, y, z) => 2 - y, (x, y, z) => x, (x, y, z) => z),
-            new FaceRotation("B’", (x, y, z) => z == 2, i => new Vector3(i, 0, 0), (x, y, z) => y, (x, y, z) => 2 - x, (x, y, z) => z),
-            new FaceRotation("L", (x, y, z) => x == 0, i => new Vector3(0, 0, -i), (x, y, z) => x, (x, y, z) => z, (x, y, z) => 2 - y),
-            new FaceRotation("L’", (x, y, z) => x == 0, i => new Vector3(0, 0, i), (x, y, z) => x, (x, y, z) => 2 - z, (x, y, z) => y),
-            new FaceRotation("R", (x, y, z) => x == 2, i => new Vector3(0, 0, i), (x, y, z) => x, (x, y, z) => 2 - z, (x, y, z) => y),
-            new FaceRotation("R’", (x, y, z) => x == 2, i => new Vector3(0, 0, -i), (x, y, z) => x, (x, y, z) => z, (x, y, z) => 2 - y),
-            new FaceRotation("U", (x, y, z) => y == 0, i => new Vector3(0, i, 0), (x, y, z) => 2 - z, (x, y, z) => y, (x, y, z) => x),
-            new FaceRotation("U’", (x, y, z) => y == 0, i => new Vector3(0, -i, 0), (x, y, z) => z, (x, y, z) => y, (x, y, z) => 2 - x),
-            new FaceRotation("D", (x, y, z) => y == 2, i => new Vector3(0, -i, 0), (x, y, z) => z, (x, y, z) => y, (x, y, z) => 2 - x),
-            new FaceRotation("D’", (x, y, z) => y == 2, i => new Vector3(0, i, 0), (x, y, z) => 2 - z, (x, y, z) => y, (x, y, z) => x));
+            new FaceRotation("F", (x, y, z) => z == 0, i => Quaternion.Euler(i, 0, 0), (x, y, z) => y, (x, y, z) => 2 - x, (x, y, z) => z),
+            new FaceRotation("F’", (x, y, z) => z == 0, i => Quaternion.Euler(-i, 0, 0), (x, y, z) => 2 - y, (x, y, z) => x, (x, y, z) => z),
+            new FaceRotation("B", (x, y, z) => z == 2, i => Quaternion.Euler(-i, 0, 0), (x, y, z) => 2 - y, (x, y, z) => x, (x, y, z) => z),
+            new FaceRotation("B’", (x, y, z) => z == 2, i => Quaternion.Euler(i, 0, 0), (x, y, z) => y, (x, y, z) => 2 - x, (x, y, z) => z),
+            new FaceRotation("L", (x, y, z) => x == 0, i => Quaternion.Euler(0, 0, -i), (x, y, z) => x, (x, y, z) => z, (x, y, z) => 2 - y),
+            new FaceRotation("L’", (x, y, z) => x == 0, i => Quaternion.Euler(0, 0, i), (x, y, z) => x, (x, y, z) => 2 - z, (x, y, z) => y),
+            new FaceRotation("R", (x, y, z) => x == 2, i => Quaternion.Euler(0, 0, i), (x, y, z) => x, (x, y, z) => 2 - z, (x, y, z) => y),
+            new FaceRotation("R’", (x, y, z) => x == 2, i => Quaternion.Euler(0, 0, -i), (x, y, z) => x, (x, y, z) => z, (x, y, z) => 2 - y),
+            new FaceRotation("U", (x, y, z) => y == 0, i => Quaternion.Euler(0, i, 0), (x, y, z) => 2 - z, (x, y, z) => y, (x, y, z) => x),
+            new FaceRotation("U’", (x, y, z) => y == 0, i => Quaternion.Euler(0, -i, 0), (x, y, z) => z, (x, y, z) => y, (x, y, z) => 2 - x),
+            new FaceRotation("D", (x, y, z) => y == 2, i => Quaternion.Euler(0, -i, 0), (x, y, z) => z, (x, y, z) => y, (x, y, z) => 2 - x),
+            new FaceRotation("D’", (x, y, z) => y == 2, i => Quaternion.Euler(0, i, 0), (x, y, z) => 2 - z, (x, y, z) => y, (x, y, z) => x));
 
         for (int i = 0; i < moves.Length; i++)
         {
@@ -557,9 +576,9 @@ public class RubiksCubeModule : MonoBehaviour
         }
     }
 
-    Transform[,,] PerformRotationOnCubelets(Transform[,,] cubelets, FaceRotation rot, bool setParent = false)
+    CubeletInfo[,,] PerformRotationOnCubelets(CubeletInfo[,,] cubelets, FaceRotation rot, bool setParent = false)
     {
-        var newCubelets = new Transform[3, 3, 3];
+        var newCubelets = new CubeletInfo[3, 3, 3];
         for (int x = 0; x < 3; x++)
             for (int y = 0; y < 3; y++)
                 for (int z = 0; z < 3; z++)
@@ -567,8 +586,9 @@ public class RubiksCubeModule : MonoBehaviour
                         if (rot.OnAxis(x, y, z))
                         {
                             if (setParent)
-                                cubelets[x, y, z].parent = OnAxis;
-                            newCubelets[x, y, z] = cubelets[rot.MapX(x, y, z), rot.MapY(x, y, z), rot.MapZ(x, y, z)];
+                                cubelets[x, y, z].Cubelet.parent = OnAxis;
+                            var otherCubelet = cubelets[rot.MapX(x, y, z), rot.MapY(x, y, z), rot.MapZ(x, y, z)];
+                            newCubelets[x, y, z] = new CubeletInfo(otherCubelet.Cubelet, rot.Rotation(90) * otherCubelet.Rotation);
                         }
                         else
                             newCubelets[x, y, z] = cubelets[x, y, z];
@@ -581,7 +601,7 @@ public class RubiksCubeModule : MonoBehaviour
 
         for (int i = speed; i <= 90; i += speed)
         {
-            OnAxis.localEulerAngles = rot.Rotation(easeOutSine(i, 0, 90, 90));
+            OnAxis.localRotation = rot.Rotation(easeOutSine(i, 0, 90, 90));
             yield return null;
         }
 
@@ -589,7 +609,7 @@ public class RubiksCubeModule : MonoBehaviour
             for (int y = 0; y < 3; y++)
                 for (int z = 0; z < 3; z++)
                     if (x != 1 || y != 1 || z != 1)
-                        _cubelets[x, y, z].parent = OffAxis;
+                        _cubelets[x, y, z].Cubelet.parent = OffAxis;
 
         OnAxis.localEulerAngles = new Vector3(0, 0, 0);
     }
