@@ -490,7 +490,7 @@ public class TestHarness : MonoBehaviour
                     }
                 }
                 catch
-                { 
+                {
                     //
                 }
                 settings.SettingsPath = "Assets/modSettings.json";
@@ -878,25 +878,6 @@ public class TestHarness : MonoBehaviour
                     StartCoroutine(SimulateModule(component, currentSelectable.transform, method, command));
                 }
             }
-
-            /*
-            foreach (KMBombModule module in FindObjectsOfType<KMBombModule>())
-            {
-                Component[] allComponents = module.gameObject.GetComponentsInChildren<Component>(true);
-                foreach (Component component in allComponents)
-                {
-                    System.Type type = component.GetType();
-                    MethodInfo method = type.GetMethod("ProcessTwitchCommand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-                    if (method != null)
-                    {
-                        Debug.LogFormat("<> method: {0}", method);
-                        StartCoroutine(SimulateModule(component, module.transform, method, command));
-                    }
-                }
-            }*/
-
-
 
             command = "";
         }
