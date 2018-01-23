@@ -86,7 +86,7 @@ public class RubiksCubeModule : MonoBehaviour
         public string HowToUse1 = "This Setting determines how the Cube rotation works in Twitch Plays";
         public string HowToUse2 = "The original method Rotates the bomb in order to view the cube sides. (and as of now, whatever side camera view that is active on that module)";
         public string HowToUse3 = "The New method actually rotates the cube itself in order to view the sides.";
-        public bool UseOriginalTwitchPlaysRotationMethod = true;
+        public bool UseOriginalTwitchPlaysRotationMethod = false;
 
         private static bool _firstTime = true;
         public static void WriteSettings(KMModSettings settings, RubiksCubeSettings rubiksCubeSettings)
@@ -556,7 +556,7 @@ public class RubiksCubeModule : MonoBehaviour
         {
             yield return frontFace
                 ? new[] { Quaternion.Euler(angle, 0, 0) * Quaternion.Euler(0, easeInOutQuad(i, 0, 360, 360), 0), Quaternion.Euler(angle, easeInOutQuad(i, 0, 360, 360), 0) }
-                : new[] { Quaternion.Euler(-angle, 0, 0) * Quaternion.Euler(0, easeInOutQuad(i, 0, -360, 360), 0), Quaternion.Euler(angle, easeInOutQuad(i, 0, -360, 360), 0) };
+                : new[] { Quaternion.Euler(-angle, 0, 0) * Quaternion.Euler(0, easeInOutQuad(i, 0, -360, 360), 0), Quaternion.Euler(-angle, easeInOutQuad(i, 0, -360, 360), 0) };
             yield return null;
         }
         for (float i = 0; i <= angle; i += getRotateRate(0.5f, 150))
