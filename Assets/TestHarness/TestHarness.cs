@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -436,10 +435,9 @@ public class TestHarness : MonoBehaviour
             {
                 if (f.FieldType.Equals(typeof(KMBombInfo)))
                 {
-                    KMBombInfo component = (KMBombInfo)f.GetValue(s);
-                    if (component.OnBombExploded != null) fakeInfo.Detonate += new FakeBombInfo.OnDetonate(component.OnBombExploded);
-                    if (component.OnBombSolved != null) fakeInfo.HandleSolved += new FakeBombInfo.OnSolved(component.OnBombSolved);
-                    continue;
+                    KMBombInfo component = (KMBombInfo) f.GetValue(s);
+                    fakeInfo.Detonate += delegate { if (component.OnBombExploded != null) component.OnBombExploded(); };
+                    fakeInfo.HandleSolved += delegate { if (component.OnBombSolved != null) component.OnBombSolved(); };
                 }
             }
         }
@@ -479,22 +477,6 @@ public class TestHarness : MonoBehaviour
                 fakeInfo.HandleStrike();
                 return false;
             };
-            KMModSettings settings = modules[i].GetComponent<KMModSettings>();
-            if (settings != null)
-            {
-                try
-                {
-                    if (File.Exists("Assets/modSettings.json"))
-                    {
-                        settings.Settings = File.ReadAllText("Assets/modSettings.json");
-                    }
-                }
-                catch
-                {
-                    //
-                }
-                settings.SettingsPath = "Assets/modSettings.json";
-            }
         }
 
         for (int i = 0; i < needyModules.Length; i++)
@@ -513,23 +495,6 @@ public class TestHarness : MonoBehaviour
                 fakeInfo.HandleStrike();
                 return false;
             };
-
-            KMModSettings settings = needyModules[i].GetComponent<KMModSettings>();
-            if (settings != null)
-            {
-                try
-                {
-                    if (File.Exists("Assets/modSettings.json"))
-                    {
-                        settings.Settings = File.ReadAllText("Assets/modSettings.json");
-                    }
-                }
-                catch
-                {
-                    //
-                }
-                settings.SettingsPath = "Assets/modSettings.json";
-            }
         }
 
         currentSelectable.ActivateChildSelectableAreas();
@@ -868,12 +833,12 @@ public class TestHarness : MonoBehaviour
             Debug.Log("Twitch Command: " + command);
 
             Component[] allComponents = currentSelectable.gameObject.GetComponentsInChildren<Component>(true);
-            foreach (Component component in allComponents)
-            {
-                System.Type type = component.GetType();
-                MethodInfo method = type.GetMethod("ProcessTwitchCommand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                foreach (Component component in allComponents)
+                {
+                    System.Type type = component.GetType();
+                    MethodInfo method = type.GetMethod("ProcessTwitchCommand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-                if (method != null)
+                    if (method != null)
                 {
                     StartCoroutine(SimulateModule(component, currentSelectable.transform, method, command));
                 }

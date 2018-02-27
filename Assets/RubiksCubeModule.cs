@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Boo.Lang.Runtime;
-using Newtonsoft.Json;
 using RubiksCube;
 using UnityEngine;
 
@@ -44,8 +41,6 @@ public class RubiksCubeModule : MonoBehaviour
     private int _moduleId;
     private static int _moduleIdCounter = 1;
 
-    private RubiksCubeSettings _modSettings = null;
-
     sealed class Pusher
     {
         public FaceRotation[] Moves { get; private set; }
@@ -81,50 +76,9 @@ public class RubiksCubeModule : MonoBehaviour
         }
     }
 
-    public class RubiksCubeSettings
-    {
-        public string HowToUse1 = "This Setting determines how the Cube rotation works in Twitch Plays";
-        public string HowToUse2 = "The original method Rotates the bomb in order to view the cube sides. (and as of now, whatever side camera view that is active on that module)";
-        public string HowToUse3 = "The New method actually rotates the cube itself in order to view the sides.";
-        public bool UseOriginalTwitchPlaysRotationMethod = false;
-
-        private static bool _firstTime = true;
-        public static void WriteSettings(KMModSettings settings, RubiksCubeSettings rubiksCubeSettings)
-        {
-            if (!_firstTime) return;
-            try
-            {
-                File.WriteAllText(settings.SettingsPath, JsonConvert.SerializeObject(rubiksCubeSettings, Formatting.Indented));
-                _firstTime = false;
-            }
-            catch
-            {
-                //
-            }
-        }
-
-        public static RubiksCubeSettings ReadSettings(KMModSettings settings)
-        {
-            RubiksCubeSettings rubiksCubeSettings;
-            try
-            {
-                rubiksCubeSettings = File.Exists(settings.SettingsPath) 
-                    ? JsonConvert.DeserializeObject<RubiksCubeSettings>(File.ReadAllText(settings.SettingsPath)) 
-                    : new RubiksCubeSettings();
-            }
-            catch
-            {
-                rubiksCubeSettings = new RubiksCubeSettings();
-            }
-            WriteSettings(settings, rubiksCubeSettings);
-            return rubiksCubeSettings;
-        }
-    }
-
     void Start()
     {
         _moduleId = _moduleIdCounter++;
-        //Cube.localEulerAngles = new Vector3(25, 70, 60);
         StartCoroutine(WaitForSerialNumber());
     }
 
@@ -329,8 +283,6 @@ public class RubiksCubeModule : MonoBehaviour
                 }
                 return true;
             };
-
-            _modSettings = RubiksCubeSettings.ReadSettings(Settings);
         };
     }
 
@@ -535,68 +487,6 @@ public class RubiksCubeModule : MonoBehaviour
         return rate * (Time.deltaTime / targetTime);
     }
 
-    IEnumerator OriginalRotate()
-    {
-        yield return null;
-        //Bomb rotation requires Quaternion.Euler(x,0,0) * Quaternion.Euler(0,y,0) * Quaternion.Euler(0,0,z)
-        //Camera view rotation requires Quaternion.Euler(x,y,z)
-        //The new format for this requires returning a Quaterion[] array containing the above two specifcations in that order.
-
-        bool frontFace = transform.root.eulerAngles.z > -50 && transform.root.eulerAngles.z < 50;  //eulerAngles.z = 0 on front face, 180 on back face.
-        const int angle = 60;
-
-        for (float i = 0; i <= angle; i += getRotateRate(0.5f, 150))
-        {
-            yield return frontFace
-                ? new[] { Quaternion.Euler(easeInOutQuad(i, 0, angle, angle), 0, 0), Quaternion.Euler(easeInOutQuad(i, 0, angle, angle), 0, 0) }
-                : new[] { Quaternion.Euler(easeInOutQuad(i, 0, -angle, angle), 0, 0), Quaternion.Euler(easeInOutQuad(i, 0, -angle, angle), 0, 0) };
-            yield return null;
-        }
-        for (float i = 0; i <= 360; i += getRotateRate(10, 750))
-        {
-            yield return frontFace
-                ? new[] { Quaternion.Euler(angle, 0, 0) * Quaternion.Euler(0, easeInOutQuad(i, 0, 360, 360), 0), Quaternion.Euler(angle, easeInOutQuad(i, 0, 360, 360), 0) }
-                : new[] { Quaternion.Euler(-angle, 0, 0) * Quaternion.Euler(0, easeInOutQuad(i, 0, -360, 360), 0), Quaternion.Euler(-angle, easeInOutQuad(i, 0, -360, 360), 0) };
-            yield return null;
-        }
-        for (float i = 0; i <= angle; i += getRotateRate(0.5f, 150))
-        {
-            yield return frontFace
-                ? new[] { Quaternion.Euler(easeInOutQuad(i, angle, 0, angle), 0, 0) , Quaternion.Euler(easeInOutQuad(i, angle, 0, angle), 0, 0) }
-                : new[] { Quaternion.Euler(easeInOutQuad(i, -angle, 0, angle), 0, 0) , Quaternion.Euler(easeInOutQuad(i, -angle, 0, angle), 0, 0) };
-            yield return null;
-        }
-        yield return Quaternion.Euler(0, 0, 0);
-    }
-
-    IEnumerator NewRotate()
-    {
-        yield return null;
-        const int angle = 75;
-        var Cube = OnAxis.parent;
-
-        for (float i = 0; i < angle; i += getRotateRate(2, 300))
-        {
-            Cube.localEulerAngles = new Vector3(30 - i, 65 + ((i / angle) * 55), 55 - ((i / angle) * 10));
-            yield return null;
-        }
-        Cube.localEulerAngles = new Vector3(Mathf.Round(-45), Mathf.Round(120), Mathf.Round(45));
-        yield return new WaitForSeconds(2f);
-        for (float i = 0; i < angle; i += getRotateRate(2, 300))
-        {
-            Cube.localEulerAngles = new Vector3(-45 + i, 120 - ((i / angle) * 55), 45 + ((i / angle) * 100));
-            yield return null;
-        }
-        Cube.localEulerAngles = new Vector3(Mathf.Round(30), Mathf.Round(65), Mathf.Round(145));
-        yield return new WaitForSeconds(2f);
-        for (float i = 0; i < angle; i += getRotateRate(2, 300))
-        {
-            Cube.localEulerAngles = new Vector3(Mathf.Round(30), Mathf.Round(65), 145 - ((i / angle) * 90));
-            yield return null;
-        }
-        Cube.localEulerAngles = new Vector3(Mathf.Round(30), Mathf.Round(65), Mathf.Round(55));
-    }
-
     IEnumerator ProcessTwitchCommand(string command)
     {
         if (_isSolved)
@@ -613,11 +503,29 @@ public class RubiksCubeModule : MonoBehaviour
         if (command.Trim().Equals("rotate", StringComparison.InvariantCultureIgnoreCase))
         {
             yield return null;
-            var rotateMethod = _modSettings.UseOriginalTwitchPlaysRotationMethod
-                ? OriginalRotate()
-                : NewRotate();
-            while(rotateMethod.MoveNext())
-                yield return rotateMethod.Current;
+            const int angle = 75;
+            var Cube = OnAxis.parent;
+
+            for (float i = 0; i < angle; i += getRotateRate(2, 300))
+            {
+                Cube.localEulerAngles = new Vector3(30 - i, 65 + ((i / angle) * 55), 55 - ((i / angle) * 10));
+                yield return null;
+            }
+            Cube.localEulerAngles = new Vector3(Mathf.Round(-45), Mathf.Round(120), Mathf.Round(45));
+            yield return new WaitForSeconds(2f);
+            for (float i = 0; i < angle; i += getRotateRate(2, 300))
+            {
+                Cube.localEulerAngles = new Vector3(-45 + i, 120 - ((i / angle) * 55), 45 + ((i / angle) * 100));
+                yield return null;
+            }
+            Cube.localEulerAngles = new Vector3(Mathf.Round(30), Mathf.Round(65), Mathf.Round(145));
+            yield return new WaitForSeconds(2f);
+            for (float i = 0; i < angle; i += getRotateRate(2, 300))
+            {
+                Cube.localEulerAngles = new Vector3(Mathf.Round(30), Mathf.Round(65), 145 - ((i / angle) * 90));
+                yield return null;
+            }
+            Cube.localEulerAngles = new Vector3(Mathf.Round(30), Mathf.Round(65), Mathf.Round(55));
             yield break;
         }
 
