@@ -363,7 +363,6 @@ public class TestHarness : MonoBehaviour
     private FakeBombInfo fakeInfo;
 
     public GameObject HighlightPrefab;
-    public Transform TwitchPlaysCameraTransform;
     TestSelectable currentSelectable;
     TestSelectableArea currentSelectableArea;
 
@@ -569,11 +568,6 @@ public class TestHarness : MonoBehaviour
                 currentSelectable.DeactivateChildSelectableAreas(currentSelectableArea.Selectable);
                 currentSelectable = currentSelectableArea.Selectable;
                 currentSelectable.ActivateChildSelectableAreas();
-                if (currentSelectable.Parent.transform != null && currentSelectable.Parent.transform.name == "TestHarness")
-                {
-                    TwitchPlaysCameraTransform.SetParent(currentSelectable.transform, false);
-                    TwitchPlaysCameraTransform.gameObject.SetActive(true);
-                }
             }
         }
 
@@ -592,10 +586,6 @@ public class TestHarness : MonoBehaviour
                 currentSelectable.DeactivateChildSelectableAreas(currentSelectable.Parent);
                 currentSelectable = currentSelectable.Parent;
                 currentSelectable.ActivateChildSelectableAreas();
-                if (currentSelectable.transform != null && currentSelectable.transform.name == "TestHarness")
-                {
-                    TwitchPlaysCameraTransform.gameObject.SetActive(false);
-                }
             }
         }
     }
@@ -713,8 +703,6 @@ public class TestHarness : MonoBehaviour
 
             int initialStrikes = fakeInfo.strikes;
             int initialSolved = fakeInfo.GetSolvedModuleNames().Count;
-            bool needQuaternionReset = false;
-            Dictionary<Transform, int> transformLayers = new Dictionary<Transform, int>();
 
             while (responseCoroutine.MoveNext())
             {
@@ -743,45 +731,12 @@ public class TestHarness : MonoBehaviour
                 else if (currentObject is Quaternion)
                 {
                     moduleTransform.localRotation = (Quaternion) currentObject;
-                    needQuaternionReset = true;
-                }
-                else if (currentObject is Quaternion[])
-                {
-                    Camera cam = TwitchPlaysCameraTransform.GetComponentInChildren<Camera>();
-                    cam.cullingMask = 1 << 12;
-                    Transform parentTransform = TwitchPlaysCameraTransform.parent;
-                    foreach (Transform t in parentTransform.GetComponentsInChildren<Transform>())
-                    {
-                        if (!transformLayers.ContainsKey(t))
-                            transformLayers[t] = t.gameObject.layer;
-                        t.gameObject.layer = 12;
-                    }
-
-                    moduleTransform.localRotation = ((Quaternion[]) currentObject)[0];
-                    Quaternion quaternion = ((Quaternion[]) currentObject)[1];
-                    TwitchPlaysCameraTransform.localRotation = Quaternion.Euler(-quaternion.eulerAngles);
-                    needQuaternionReset = true;
                 }
                 else
                     yield return currentObject;
 
                 if (fakeInfo.strikes != initialStrikes || fakeInfo.GetSolvedModuleNames().Count != initialSolved)
-                    break;
-            }
-            if (needQuaternionReset)
-            {
-                moduleTransform.localRotation = Quaternion.identity;
-                TwitchPlaysCameraTransform.localRotation = Quaternion.identity;
-                Camera cam = TwitchPlaysCameraTransform.GetComponentInChildren<Camera>();
-                cam.cullingMask = -1;
-                Transform parentTransform = TwitchPlaysCameraTransform.parent;
-                foreach (Transform t in parentTransform.GetComponentsInChildren<Transform>())
-                {
-                    if (transformLayers.ContainsKey(t))
-                        t.gameObject.layer = transformLayers[t];
-                    else
-                        t.gameObject.layer = 11;
-                }
+                    yield break;
             }
         }
     }
@@ -832,18 +787,18 @@ public class TestHarness : MonoBehaviour
         {
             Debug.Log("Twitch Command: " + command);
 
-            Component[] allComponents = currentSelectable.gameObject.GetComponentsInChildren<Component>(true);
+            foreach (KMBombModule module in FindObjectsOfType<KMBombModule>())
+            {
+                Component[] allComponents = module.gameObject.GetComponentsInChildren<Component>(true);
                 foreach (Component component in allComponents)
                 {
                     System.Type type = component.GetType();
                     MethodInfo method = type.GetMethod("ProcessTwitchCommand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
                     if (method != null)
-                {
-                    StartCoroutine(SimulateModule(component, currentSelectable.transform, method, command));
+                        StartCoroutine(SimulateModule(component, module.transform, method, command));
                 }
             }
-
             command = "";
         }
     }

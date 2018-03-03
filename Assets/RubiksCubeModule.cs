@@ -37,6 +37,9 @@ public class RubiksCubeModule : MonoBehaviour
     private Pusher _selectedPusher = null;
 
     const string _faces = "ULFDRB";
+    const float _initialSetupSpeed = .01f;
+    const float _resetSpeed = .1f;
+    const float _normalRotationSpeed = .5f;
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
@@ -247,10 +250,10 @@ public class RubiksCubeModule : MonoBehaviour
                     localAngles: pusherMoveInfos.Where(inf => inf.Pushers.Contains(Pushers[pix])).Select(inf => inf.Rotations[Array.IndexOf(inf.Pushers, Pushers[pix])]).ToArray()
                 ));
 
-            _queue.Enqueue(90);
+            _queue.Enqueue(_initialSetupSpeed);
             for (int i = moves.Count - 1; i >= 0; i--)
                 _queue.Enqueue(moves[i].Reverse);
-            _queue.Enqueue(5);
+            _queue.Enqueue(_normalRotationSpeed);
 
             StartCoroutine(PerformMoves());
 
@@ -267,10 +270,10 @@ public class RubiksCubeModule : MonoBehaviour
                 if (_isSolved || _performedMoves.Count == 0)
                     return false;
                 Debug.LogFormat("[Rubik’s Cube #{0}] Moves performed before reset: {1}", _moduleId, string.Join(" ", _performedMoves.Reverse().Select(m => m.Name).ToArray()));
-                _queue.Enqueue(18);
+                _queue.Enqueue(_resetSpeed);
                 while (_performedMoves.Count > 0)
                     _queue.Enqueue(_performedMoves.Pop().Reverse);
-                _queue.Enqueue(5);
+                _queue.Enqueue(_normalRotationSpeed);
                 return false;
             };
 
@@ -360,23 +363,26 @@ public class RubiksCubeModule : MonoBehaviour
 
     private IEnumerator PerformMoves()
     {
-        int speed = 5;
+        // Duration of a rotation in seconds.
+        // .7 for normal rotations, .25 for “reset”, .01 for initial setup
+        float rotationDuration = .7f;
+
         while (!_isSolved)
         {
             yield return null;
             if (_queue.Count > 0)
             {
                 var obj = _queue.Dequeue();
-                if (obj is int)
-                    speed = (int) obj;
+                if (obj is float)
+                    rotationDuration = (float) obj;
                 else if (obj is FaceRotation)
                 {
                     foreach (var p in Pushers)
                         p.gameObject.SetActive(false);
-                    foreach (var item in PerformRotation((FaceRotation) obj, speed))
+                    foreach (var item in PerformRotation((FaceRotation) obj, rotationDuration))
                         yield return item;
 
-                    if (speed == 5 && isSolved(_cubelets))
+                    if (rotationDuration == 1f && isSolved(_cubelets))
                     {
                         _isSolved = true;
                         Module.HandlePass();
@@ -387,6 +393,7 @@ public class RubiksCubeModule : MonoBehaviour
                             _selectedPusher = null;
                         }
                         Reset.gameObject.SetActive(false);
+                        _queue.Clear();
                         yield break;
                     }
 
@@ -600,15 +607,19 @@ public class RubiksCubeModule : MonoBehaviour
         return newCubelets;
     }
 
-    IEnumerable PerformRotation(FaceRotation rot, int speed)
+    IEnumerable PerformRotation(FaceRotation rot, float duration)
     {
         _cubelets = PerformRotationOnCubelets(_cubelets, rot, setParent: true);
 
-        for (int i = speed; i <= 90; i += speed)
+        var elapsed = 0f;
+        while (elapsed < duration)
         {
-            OnAxis.localRotation = rot.Rotation(easeOutSine(i, 0, 90, 90));
             yield return null;
+            var delta = Time.deltaTime;
+            elapsed += delta;
+            OnAxis.localRotation = rot.Rotation(easeOutSine(elapsed, 0, 90, duration));
         }
+        OnAxis.localRotation = rot.Rotation(90);
 
         for (int x = 0; x < 3; x++)
             for (int y = 0; y < 3; y++)
