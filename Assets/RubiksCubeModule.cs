@@ -382,7 +382,7 @@ public class RubiksCubeModule : MonoBehaviour
                     foreach (var item in PerformRotation((FaceRotation) obj, rotationDuration))
                         yield return item;
 
-                    if (rotationDuration == 1f && isSolved(_cubelets))
+                    if (rotationDuration == _normalRotationSpeed && isSolved(_cubelets))
                     {
                         _isSolved = true;
                         Module.HandlePass();
