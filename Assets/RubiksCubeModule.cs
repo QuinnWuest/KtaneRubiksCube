@@ -494,6 +494,10 @@ public class RubiksCubeModule : MonoBehaviour
         return rate * (Time.deltaTime / targetTime);
     }
 
+#pragma warning disable 414
+    private string TwitchHelpMessage = @"View the colors on all sides with “!{0} rotate”. Reset the cube to starting state with “!{0} reset”. Solve the cube with “!{0} r' d u f' r' d' u b' u' f”.";
+#pragma warning restore 414
+
     IEnumerator ProcessTwitchCommand(string command)
     {
         if (_isSolved)
