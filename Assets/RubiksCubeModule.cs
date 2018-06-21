@@ -5,6 +5,8 @@ using System.Linq;
 using RubiksCube;
 using UnityEngine;
 
+using Rnd = UnityEngine.Random;
+
 /// <summary>
 /// On the Subject of Rubik’s Cube
 /// Created by Timwi and Freelancer1025
@@ -377,6 +379,7 @@ public class RubiksCubeModule : MonoBehaviour
                     rotationDuration = (float) obj;
                 else if (obj is FaceRotation)
                 {
+                    Audio.PlaySoundAtTransform("RubikTurn" + Rnd.Range(1, 5), OnAxis);
                     foreach (var p in Pushers)
                         p.gameObject.SetActive(false);
                     foreach (var item in PerformRotation((FaceRotation) obj, rotationDuration))

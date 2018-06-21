@@ -10,11 +10,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5cf2299c8864afe4ab42466f546ae20d, type: 3}
   m_Name: WorkshopItem
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   WorkshopPublishedFileID: 916589421
   Title: Rubik's Cube
   Description: "It\u2019s a Rubik\u2019s Cube. You know what that is, right? Don\u2019t
-    you?\n\nModule created by Timwi and Freelancer1025.\n\n[url=http://ktane.timwi.de/PDF/Rubik%E2%80%99s%20Cube.pdf]Manual
+    you?\n\nModule created by Timwi and Freelancer1025. Sounds by Jr_All_Star.\n\n[url=http://ktane.timwi.de/PDF/Rubik%E2%80%99s%20Cube.pdf]Manual
     PDF[/url]\n[url=http://ktane.timwi.de/HTML/Rubik%E2%80%99s%20Cube.html]Manual
     HTML[/url]\n[b][url=https://www.youtube.com/watch?v=_6Gr2g1wBv0]Tutorial video[/url]
     (thanks Elias!)[/b]"
