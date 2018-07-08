@@ -10,14 +10,13 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 615501dbe4f3fe94fbf4b564abb10237, type: 3}
   m_Name: ModConfig
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   id: RubiksCube
   title: Rubik's Cube
   description: "It\u2019s a Rubik\u2019s Cube. You know what that is, right? Don\u2019t
-    you?\n\nModule created by Timwi and Freelancer1025, sounds by Jr_All_Star.\n\n[url=http://ktane.timwi.de/PDF/Rubik%E2%80%99s%20Cube.pdf]Manual
+    you?\n\nModule created by Timwi, based on an idea by Freelancer1025. Sounds by Jr. All Star.\n\n[url=http://ktane.timwi.de/PDF/Rubik%E2%80%99s%20Cube.pdf]Manual
     PDF[/url]\n[url=http://ktane.timwi.de/HTML/Rubik%E2%80%99s%20Cube.html]Manual
-    HTML[/url]\n[b][url=https://www.youtube.com/watch?v=_6Gr2g1wBv0]Tutorial video[/url]
-    (thanks Elias!)[/b]"
+    HTML[/url]"
   version: 1.0
   outputFolder: build
   previewImage: {fileID: 2800000, guid: bd5c1f4881f57d54481b44e4c8a7779a, type: 3}
