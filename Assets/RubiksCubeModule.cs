@@ -478,20 +478,6 @@ public class RubiksCubeModule : MonoBehaviour
         _moves = moves.ToDictionary(f => f.Name, StringComparer.InvariantCultureIgnoreCase);
     }
 
-    private float easeInOutQuad(float time, float start, float end, float duration)
-    {
-        time /= duration / 2;
-        if (time < 1)
-            return (end - start) / 2 * time * time + start;
-        time--;
-        return -(end - start) / 2 * (time * (time - 2) - 1) + start;
-    }
-
-    private float easeOutSine(float t, float b, float c, float d)
-    {
-        return (float) (c * Math.Sin(t / d * (Math.PI / 2)) + b);
-    }
-
     private float getRotateRate(float targetTime, float rate)
     {
         return rate * (Time.deltaTime / targetTime);
@@ -624,7 +610,7 @@ public class RubiksCubeModule : MonoBehaviour
             yield return null;
             var delta = Time.deltaTime;
             elapsed += delta;
-            OnAxis.localRotation = rot.Rotation(easeOutSine(elapsed, 0, 90, duration));
+            OnAxis.localRotation = rot.Rotation(Easing.OutSine(elapsed, 0, 90, duration));
         }
         OnAxis.localRotation = rot.Rotation(90);
 
