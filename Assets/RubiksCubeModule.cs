@@ -34,6 +34,7 @@ public class RubiksCubeModule : MonoBehaviour
 
     private Queue<object> _queue = new Queue<object>();
     private Stack<FaceRotation> _performedMoves = new Stack<FaceRotation>();
+    private List<FaceRotation> _solveMoves;
 
     private bool _isSolved = false;
     private Pusher _selectedPusher = null;
@@ -45,6 +46,7 @@ public class RubiksCubeModule : MonoBehaviour
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
+    private int _animating = 0;
 
     sealed class Pusher
     {
@@ -131,24 +133,24 @@ public class RubiksCubeModule : MonoBehaviour
 
         // Now try to minimize the sequence
         var ix = 0;
-        var moves = moves2.ToList();
-        while (ix < moves.Count)
+        _solveMoves = moves2.ToList();
+        while (ix < _solveMoves.Count)
         {
             var n = 1;
             var affected = new List<int>();
-            for (int j = ix + 1; j < moves.Count; j++)
+            for (int j = ix + 1; j < _solveMoves.Count; j++)
             {
-                if (moves[j] == moves[ix])
+                if (_solveMoves[j] == _solveMoves[ix])
                 {
                     n++;
                     affected.Add(j);
                 }
-                else if (moves[j] == moves[ix].Reverse)
+                else if (_solveMoves[j] == _solveMoves[ix].Reverse)
                 {
                     n--;
                     affected.Add(j);
                 }
-                else if (!moves[ix].OppositeSide.Contains(moves[j]))
+                else if (!_solveMoves[ix].OppositeSide.Contains(_solveMoves[j]))
                     break;
             }
 
@@ -157,16 +159,16 @@ public class RubiksCubeModule : MonoBehaviour
                 case 0:
                     // the moves cancel each other out completely.
                     for (int k = affected.Count - 1; k >= 0; k--)
-                        moves.RemoveAt(affected[k]);
-                    moves.RemoveAt(ix);
+                        _solveMoves.RemoveAt(affected[k]);
+                    _solveMoves.RemoveAt(ix);
                     ix = 0;
                     continue;
 
                 case 3:
                     // e.g. 3 of the same move ⇒ reverse move
                     for (int k = affected.Count - 1; k >= 0; k--)
-                        moves.RemoveAt(affected[k]);
-                    moves[ix] = moves[ix].Reverse;
+                        _solveMoves.RemoveAt(affected[k]);
+                    _solveMoves[ix] = _solveMoves[ix].Reverse;
                     ix = 0;
                     continue;
             }
@@ -175,7 +177,7 @@ public class RubiksCubeModule : MonoBehaviour
         }
 
         // At this point, if the sequence is shorter than 8 moves, we want to generate a different sequence of colors.
-        if (moves.Count < 8 && retries-- > 0)
+        if (_solveMoves.Count < 8 && retries-- > 0)
             goto retry;
 
         // Set all the stickers to the desired colors and populate the _cubelets array
@@ -206,7 +208,7 @@ public class RubiksCubeModule : MonoBehaviour
         else if (colR == 3 || colR == 5)
             Debug.LogFormat("[Rubik’s Cube #{0}] R face is green/white: reverse the order of all the moves.", _moduleId);
         Debug.LogFormat("[Rubik’s Cube #{0}] Solution: {1}", _moduleId, string.Join(" ", moves2.Select(m => m.Name).ToArray()));
-        Debug.LogFormat("[Rubik’s Cube #{0}] Minimized solution: {1}", _moduleId, string.Join(" ", moves.Select(m => m.Name).ToArray()));
+        Debug.LogFormat("[Rubik’s Cube #{0}] Minimized solution: {1}", _moduleId, string.Join(" ", _solveMoves.Select(m => m.Name).ToArray()));
 
         _cubeletsSolved = new Transform[3, 3, 3];
         for (int x = 0; x < 3; x++)
@@ -253,8 +255,8 @@ public class RubiksCubeModule : MonoBehaviour
                 ));
 
             _queue.Enqueue(_initialSetupSpeed);
-            for (int i = moves.Count - 1; i >= 0; i--)
-                _queue.Enqueue(moves[i].Reverse);
+            for (int i = _solveMoves.Count - 1; i >= 0; i--)
+                _queue.Enqueue(_solveMoves[i].Reverse);
             _queue.Enqueue(_normalRotationSpeed);
 
             StartCoroutine(PerformMoves());
@@ -379,11 +381,13 @@ public class RubiksCubeModule : MonoBehaviour
                     rotationDuration = (float) obj;
                 else if (obj is FaceRotation)
                 {
+                    _animating++;
                     Audio.PlaySoundAtTransform("RubikTurn" + Rnd.Range(1, 5), OnAxis);
                     foreach (var p in Pushers)
                         p.gameObject.SetActive(false);
                     foreach (var item in PerformRotation((FaceRotation) obj, rotationDuration))
                         yield return item;
+                    _animating--;
 
                     if (rotationDuration == _normalRotationSpeed && isSolved(_cubelets))
                     {
@@ -621,5 +625,20 @@ public class RubiksCubeModule : MonoBehaviour
                         _cubelets[x, y, z].Cubelet.parent = OffAxis;
 
         OnAxis.localEulerAngles = new Vector3(0, 0, 0);
+    }
+
+    IEnumerator TwitchHandleForcedSolve()
+    {
+        Reset.OnInteract();
+        while (_queue.Count > 0 || _animating > 0)
+            yield return true;
+
+        yield return new WaitForSeconds(.5f);
+
+        foreach (var move in _solveMoves)
+            _queue.Enqueue(move);
+
+        while (_queue.Count > 0 || _animating > 0)
+            yield return true;
     }
 }
