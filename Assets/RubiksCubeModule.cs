@@ -353,7 +353,7 @@ public class RubiksCubeModule : MonoBehaviour
             _selectedPusher.MeshFilter.mesh = ArrowNSWE;
         };
 
-        pusher.Selectable.OnDeselect += delegate
+        pusher.Selectable.OnHighlightEnded += delegate
         {
             if (!_isSolved && _selectedPusher != null)
             {
