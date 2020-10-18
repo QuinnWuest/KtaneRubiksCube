@@ -196,19 +196,19 @@ public class RubiksCubeModule : MonoBehaviour
                         }
                     }
 
-        Debug.LogFormat("[Rubik’s Cube #{0}] Face colors: {1}", _moduleId, string.Join(", ", new[] { 0, 1, 2, 4, 3 }.Select(i => string.Format("{0}={1}", _faces[i], colorNames[colors[i]])).ToArray()));
-        Debug.LogFormat("[Rubik’s Cube #{0}] Column shifts: U={1}, L={2}, F={3}", _moduleId, columnShifts[0], columnShifts[1], columnShifts[2]);
-        Debug.LogFormat("[Rubik’s Cube #{0}] Ignoring serial number character #{1}: {2}", _moduleId, serialIgnore + 1, string.Join(", ", rows.Select((r, rIx) => string.Format("{0}={1}/{2}", ser[rIx], table[r][0].Name, table[r][1].Name)).ToArray()));
+        Debug.LogFormat("[Rubik's Cube #{0}] Face colors: {1}", _moduleId, string.Join(", ", new[] { 0, 1, 2, 4, 3 }.Select(i => string.Format("{0}={1}", _faces[i], colorNames[colors[i]])).ToArray()));
+        Debug.LogFormat("[Rubik's Cube #{0}] Column shifts: U={1}, L={2}, F={3}", _moduleId, columnShifts[0], columnShifts[1], columnShifts[2]);
+        Debug.LogFormat("[Rubik's Cube #{0}] Ignoring serial number character #{1}: {2}", _moduleId, serialIgnore + 1, string.Join(", ", rows.Select((r, rIx) => string.Format("{0}={1}/{2}", ser[rIx], table[r][0].Name, table[r][1].Name)).ToArray()));
         if (colR >= 1 && colR <= 3)
-            Debug.LogFormat("[Rubik’s Cube #{0}] R face is red/green/blue. Moves now: {1}", _moduleId, string.Join(" ", moves1.Select(m => m.Name).ToArray()));
+            Debug.LogFormat("[Rubik's Cube #{0}] R face is red/green/blue. Moves now: {1}", _moduleId, string.Join(" ", moves1.Select(m => m.Name).ToArray()));
         else
-            Debug.LogFormat("[Rubik’s Cube #{0}] R face is NOT red/green/blue. Moves now: {1}", _moduleId, string.Join(" ", moves1.Select(m => m.Name).ToArray()));
+            Debug.LogFormat("[Rubik's Cube #{0}] R face is NOT red/green/blue. Moves now: {1}", _moduleId, string.Join(" ", moves1.Select(m => m.Name).ToArray()));
         if (colR == 0 || colR == 2)
-            Debug.LogFormat("[Rubik’s Cube #{0}] R face is red/yellow: change the first five moves to their opposites.", _moduleId);
+            Debug.LogFormat("[Rubik's Cube #{0}] R face is red/yellow: change the first five moves to their opposites.", _moduleId);
         else if (colR == 3 || colR == 5)
-            Debug.LogFormat("[Rubik’s Cube #{0}] R face is green/white: reverse the order of all the moves.", _moduleId);
-        Debug.LogFormat("[Rubik’s Cube #{0}] Solution: {1}", _moduleId, string.Join(" ", moves2.Select(m => m.Name).ToArray()));
-        Debug.LogFormat("[Rubik’s Cube #{0}] Minimized solution: {1}", _moduleId, string.Join(" ", _solveMoves.Select(m => m.Name).ToArray()));
+            Debug.LogFormat("[Rubik's Cube #{0}] R face is green/white: reverse the order of all the moves.", _moduleId);
+        Debug.LogFormat("[Rubik's Cube #{0}] Solution: {1}", _moduleId, string.Join(" ", moves2.Select(m => m.Name).ToArray()));
+        Debug.LogFormat("[Rubik's Cube #{0}] Minimized solution: {1}", _moduleId, string.Join(" ", _solveMoves.Select(m => m.Name).ToArray()));
 
         _cubeletsSolved = new Transform[3, 3, 3];
         for (int x = 0; x < 3; x++)
@@ -264,7 +264,7 @@ public class RubiksCubeModule : MonoBehaviour
             Bomb.OnBombExploded += delegate
             {
                 if (!_isSolved && _performedMoves.Count > 0)
-                    Debug.LogFormat("[Rubik’s Cube #{0}] Moves performed before bomb exploded: {1}", _moduleId, string.Join(" ", _performedMoves.Reverse().Select(m => m.Name).ToArray()));
+                    Debug.LogFormat("[Rubik's Cube #{0}] Moves performed before bomb exploded: {1}", _moduleId, string.Join(" ", _performedMoves.Reverse().Select(m => m.Name).ToArray()));
             };
 
             Reset.OnInteract += delegate
@@ -273,7 +273,7 @@ public class RubiksCubeModule : MonoBehaviour
                 Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, Reset.transform);
                 if (_isSolved || _performedMoves.Count == 0)
                     return false;
-                Debug.LogFormat("[Rubik’s Cube #{0}] Moves performed before reset: {1}", _moduleId, string.Join(" ", _performedMoves.Reverse().Select(m => m.Name).ToArray()));
+                Debug.LogFormat("[Rubik's Cube #{0}] Moves performed before reset: {1}", _moduleId, string.Join(" ", _performedMoves.Reverse().Select(m => m.Name).ToArray()));
                 _queue.Enqueue(_resetSpeed);
                 while (_performedMoves.Count > 0)
                     _queue.Enqueue(_performedMoves.Pop().Reverse);
@@ -393,7 +393,7 @@ public class RubiksCubeModule : MonoBehaviour
                     {
                         _isSolved = true;
                         Module.HandlePass();
-                        Debug.LogFormat("[Rubik’s Cube #{0}] Module solved.", _moduleId);
+                        Debug.LogFormat("[Rubik's Cube #{0}] Module solved.", _moduleId);
                         if (_selectedPusher != null)
                         {
                             _selectedPusher.MeshRenderer.enabled = false;
