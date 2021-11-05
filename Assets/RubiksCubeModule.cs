@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using RubiksCube;
 using UnityEngine;
 
@@ -18,10 +19,12 @@ public class RubiksCubeModule : MonoBehaviour
     public KMAudio Audio;
     public KMModSettings Settings;
     public KMSelectable MainSelectable;
+    public KMColorblindMode ColorblindMode;
 
     public KMSelectable Reset;
     public KMSelectable[] Pushers;
     public Material[] StickerMaterials;
+    public TextMesh[] ColorblindTexts;
 
     public Transform OffAxis;
     public Transform OnAxis;
@@ -32,9 +35,9 @@ public class RubiksCubeModule : MonoBehaviour
     private Transform[,,] _cubeletsSolved;
     private CubeletInfo[,,] _cubelets;
 
-    private Queue<object> _queue = new Queue<object>();
-    private Stack<FaceRotation> _performedMoves = new Stack<FaceRotation>();
-    private List<FaceRotation> _solveMoves;
+    private readonly Queue<object> _queue = new Queue<object>();
+    private readonly Stack<FaceRotation> _performedMoves = new Stack<FaceRotation>();
+    private readonly List<FaceRotation> _solveMoves = new List<FaceRotation>();
 
     private bool _isSolved = false;
     private Pusher _selectedPusher = null;
@@ -133,7 +136,7 @@ public class RubiksCubeModule : MonoBehaviour
 
         // Now try to minimize the sequence
         var ix = 0;
-        _solveMoves = moves2.ToList();
+        _solveMoves.AddRange(moves2);
         while (ix < _solveMoves.Count)
         {
             var n = 1;
@@ -195,6 +198,11 @@ public class RubiksCubeModule : MonoBehaviour
                                 sticker.GetComponent<MeshRenderer>().material = StickerMaterials[colors[i]];
                         }
                     }
+
+        if (ColorblindMode.ColorblindModeActive)
+            ActivateColorblindMode();
+        for (var i = 0; i < ColorblindTexts.Length; i++)
+            ColorblindTexts[i].text = colorNames[colors[i / 2]].Substring(0, 1);
 
         Debug.LogFormat("[Rubik's Cube #{0}] Face colors: {1}", _moduleId, string.Join(", ", new[] { 0, 1, 2, 4, 3 }.Select(i => string.Format("{0}={1}", _faces[i], colorNames[colors[i]])).ToArray()));
         Debug.LogFormat("[Rubik's Cube #{0}] Column shifts: U={1}, L={2}, F={3}", _moduleId, columnShifts[0], columnShifts[1], columnShifts[2]);
@@ -291,6 +299,13 @@ public class RubiksCubeModule : MonoBehaviour
                 return true;
             };
         };
+    }
+
+    private void ActivateColorblindMode()
+    {
+        for (var i = 0; i < ColorblindTexts.Length; i++)
+            ColorblindTexts[i].gameObject.SetActive(true);
+        StartCoroutine(ShowColorblindTexts());
     }
 
     private void SetPusherEvents(Pusher pusher)
@@ -401,6 +416,7 @@ public class RubiksCubeModule : MonoBehaviour
                         }
                         Reset.gameObject.SetActive(false);
                         _queue.Clear();
+                        StartCoroutine(RemoveColorblindTexts());
                         yield break;
                     }
 
@@ -408,6 +424,32 @@ public class RubiksCubeModule : MonoBehaviour
                         p.gameObject.SetActive(true);
                 }
             }
+        }
+    }
+
+    private IEnumerator RemoveColorblindTexts()
+    {
+        var duration = 1.2f;
+        var elapsed = 0f;
+        while (elapsed < duration)
+        {
+            for (var i = 0; i < ColorblindTexts.Length; i++)
+                ColorblindTexts[i].transform.localPosition = new Vector3(0, Easing.InCubic(elapsed, 0, -5f, duration), 0);
+            yield return null;
+            elapsed += Time.deltaTime;
+        }
+    }
+
+    private IEnumerator ShowColorblindTexts()
+    {
+        var duration = 1.2f;
+        var elapsed = 0f;
+        while (elapsed < duration)
+        {
+            for (var i = 0; i < ColorblindTexts.Length; i++)
+                ColorblindTexts[i].transform.localPosition = new Vector3(0, Easing.OutCubic(elapsed, -5f, 0, duration), 0);
+            yield return null;
+            elapsed += Time.deltaTime;
         }
     }
 
@@ -487,14 +529,27 @@ public class RubiksCubeModule : MonoBehaviour
         return rate * (Time.deltaTime / targetTime);
     }
 
+    void Update()
+    {
+        for (var i = 0; i < ColorblindTexts.Length; i++)
+            ColorblindTexts[i].transform.localEulerAngles = new Vector3(0, 200 * Time.time, 0);
+    }
+
 #pragma warning disable 414
-    private string TwitchHelpMessage = @"View the colors on all sides with “!{0} rotate”. Reset the cube to starting state with “!{0} reset”. Solve the cube with “!{0} r' d u f' r' d' u b' u' f”.";
+    private string TwitchHelpMessage = @"!{0} rotate [view the other sides] | !{0} reset | !{0} r' d u f' r' d' u b' u' f [perform rotations] | !{0} colorblind";
 #pragma warning restore 414
 
     IEnumerator ProcessTwitchCommand(string command)
     {
         if (_isSolved)
             yield break;
+
+        if (Regex.IsMatch(command, @"^\s*(cb|colorblind)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            yield return null;
+            ActivateColorblindMode();
+            yield break;
+        }
 
         if (command.Trim().Equals("reset", StringComparison.InvariantCultureIgnoreCase))
         {
