@@ -50,6 +50,7 @@ public class RubiksCubeModule : MonoBehaviour
     private int _moduleId;
     private static int _moduleIdCounter = 1;
     private int _animating = 0;
+    private bool _colorblind;
 
     sealed class Pusher
     {
@@ -200,8 +201,9 @@ public class RubiksCubeModule : MonoBehaviour
                         }
                     }
 
-        if (ColorblindMode.ColorblindModeActive)
-            ActivateColorblindMode();
+        _colorblind = ColorblindMode.ColorblindModeActive;
+        if (_colorblind)
+            SetColorblindMode();
         for (var i = 0; i < ColorblindTexts.Length; i++)
             ColorblindTexts[i].text = colorNames[colors[i / 2]].Substring(0, 1);
 
@@ -302,11 +304,9 @@ public class RubiksCubeModule : MonoBehaviour
         };
     }
 
-    private void ActivateColorblindMode()
+    private void SetColorblindMode()
     {
-        for (var i = 0; i < ColorblindTexts.Length; i++)
-            ColorblindTexts[i].gameObject.SetActive(true);
-        StartCoroutine(ShowColorblindTexts());
+        StartCoroutine(_colorblind ? ShowColorblindTexts() : RemoveColorblindTexts());
     }
 
     private void SetPusherEvents(Pusher pusher)
@@ -417,7 +417,8 @@ public class RubiksCubeModule : MonoBehaviour
                         }
                         Reset.gameObject.SetActive(false);
                         _queue.Clear();
-                        StartCoroutine(RemoveColorblindTexts());
+                        if (_colorblind)
+                            StartCoroutine(RemoveColorblindTexts());
                         yield break;
                     }
 
@@ -439,10 +440,14 @@ public class RubiksCubeModule : MonoBehaviour
             yield return null;
             elapsed += Time.deltaTime;
         }
+        for (var i = 0; i < ColorblindTexts.Length; i++)
+            ColorblindTexts[i].gameObject.SetActive(false);
     }
 
     private IEnumerator ShowColorblindTexts()
     {
+        for (var i = 0; i < ColorblindTexts.Length; i++)
+            ColorblindTexts[i].gameObject.SetActive(true);
         var duration = 1.2f;
         var elapsed = 0f;
         while (elapsed < duration)
@@ -548,7 +553,8 @@ public class RubiksCubeModule : MonoBehaviour
         if (Regex.IsMatch(command, @"^\s*(cb|colorblind)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
             yield return null;
-            ActivateColorblindMode();
+            _colorblind = !_colorblind;
+            SetColorblindMode();
             yield break;
         }
 
