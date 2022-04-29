@@ -136,6 +136,7 @@ public class RubiksCubeModule : MonoBehaviour
 
         // Now try to minimize the sequence
         var ix = 0;
+        _solveMoves.Clear();
         _solveMoves.AddRange(moves2);
         while (ix < _solveMoves.Count)
         {
