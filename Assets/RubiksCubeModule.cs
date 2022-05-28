@@ -51,6 +51,7 @@ public class RubiksCubeModule : MonoBehaviour
     private static int _moduleIdCounter = 1;
     private int _animating = 0;
     private bool _colorblind;
+    private bool _mysteryHidden;
 
     sealed class Pusher
     {
@@ -265,12 +266,8 @@ public class RubiksCubeModule : MonoBehaviour
                     localAngles: pusherMoveInfos.Where(inf => inf.Pushers.Contains(Pushers[pix])).Select(inf => inf.Rotations[Array.IndexOf(inf.Pushers, Pushers[pix])]).ToArray()
                 ));
 
-            _queue.Enqueue(_initialSetupSpeed);
-            for (int i = _solveMoves.Count - 1; i >= 0; i--)
-                _queue.Enqueue(_solveMoves[i].Reverse);
-            _queue.Enqueue(_normalRotationSpeed);
-
-            StartCoroutine(PerformMoves());
+            if (!_mysteryHidden)
+                PerformInitialRotations();
 
             Bomb.OnBombExploded += delegate
             {
@@ -302,6 +299,15 @@ public class RubiksCubeModule : MonoBehaviour
                 return true;
             };
         };
+    }
+
+    private void PerformInitialRotations()
+    {
+        _queue.Enqueue(_initialSetupSpeed);
+        for (int i = _solveMoves.Count - 1; i >= 0; i--)
+            _queue.Enqueue(_solveMoves[i].Reverse);
+        _queue.Enqueue(_normalRotationSpeed);
+        StartCoroutine(PerformMoves());
     }
 
     private void SetColorblindMode()
@@ -702,5 +708,16 @@ public class RubiksCubeModule : MonoBehaviour
 
         while (_queue.Count > 0 || _animating > 0)
             yield return true;
+    }
+
+    public void MysteryModuleHiding()
+    {
+        _mysteryHidden = true;
+    }
+
+    public void MysteryModuleRevealing()
+    {
+        _mysteryHidden = false;
+        PerformInitialRotations();
     }
 }
