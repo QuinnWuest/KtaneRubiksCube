@@ -52,6 +52,7 @@ public class RubiksCubeModule : MonoBehaviour
     private int _animating = 0;
     private bool _colorblind;
     private bool _mysteryHidden;
+    private bool _hasActivated;
 
     sealed class Pusher
     {
@@ -231,6 +232,12 @@ public class RubiksCubeModule : MonoBehaviour
 
         Module.OnActivate += delegate
         {
+            // There’s a bug with the factory room in sequence mode that can cause OnActivate to be called multiple times.
+            // This can result in the faces of the cube contorting in such a way that makes the module impossible to work with.
+            // Therefore, make sure that the code in OnActivate only runs once.
+            if (_hasActivated)
+                return;
+            _hasActivated = true;
             var pusherMoveInfos = @"
                 B  = F002 C002 E311 B311 
                 B’ = B111 E111 C022 F022 
